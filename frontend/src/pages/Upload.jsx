@@ -9,8 +9,9 @@ import VideoPlayer from '../component/VideoPlayer'
 import { serverUrl } from '../App'
 import axios from 'axios'
 import { setPostData } from '../redux/postSlice'
-import { setStoryData } from '../redux/storySlice'
+import { setCurrentUserStory, setStoryData } from '../redux/storySlice'
 import { setLoopData } from '../redux/loopSlice'
+import { setUserData } from '../redux/userSlice'
 
 function Upload() {
     const navigate = useNavigate()
@@ -60,8 +61,8 @@ function Upload() {
             formData.append("mediaType", mediaType)
             formData.append("media", backendMedia)
             const result = await axios.post(`${serverUrl}/api/story/upload`, formData, { withCredentials: true })
+            dispatch(setCurrentUserStory(result.data))
             console.log(result)
-            dispatch(setStoryData([...storyData, result.formData]))
             navigate("/")
         } catch (error) {
             console.log(error)

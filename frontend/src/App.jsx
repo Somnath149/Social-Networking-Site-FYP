@@ -18,6 +18,8 @@ import getAllpost from './hooks/getAllpost'
 import getAllLoops from './hooks/getAllLoops'
 import axios from "axios";
 import Loops from './pages/Loops'
+import Story from './pages/Story'
+import getAllStories from './hooks/getAllStories'
 
 export const serverUrl = "http://localhost:8000"
 function App() {
@@ -45,6 +47,7 @@ function App() {
   getSuggestedUser()
   getAllpost()
   getAllLoops()
+  getAllStories()
   const { userData } = useSelector(state => state.user)
   return (
     <div className="relative w-full h-screen overflow-hidden">
@@ -56,6 +59,7 @@ function App() {
             <Route path='/forgot-password' element={!userData ? <ForgotPassword /> : <Navigate to={"/"} />} />
             <Route path='/' element={userData ? <Home /> : <Navigate to={"/signin"} />} />
             <Route path='/profile/:userName' element={userData ? <Profile /> : <Navigate to={"/signin"} />} />
+            <Route path='/story/:userName' element={userData ? <Story /> : <Navigate to={"/signin"} />} />
             <Route path='/editprofile' element={userData ? <EditProfile /> : <Navigate to={"/signin"} />} />
             <Route path='/upload' element={userData ? <Upload /> : <Navigate to={"/signin"} />} />
             <Route path='/loops' element={userData ? <Loops /> : <Navigate to={"/signin"} />} />

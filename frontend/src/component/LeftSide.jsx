@@ -48,7 +48,7 @@ function LeftSide() {
 
             <div className='w-full flex flex-col gap-[20px] p-[20px]'>
                 <h1 className='text-[white] text-[19px]'>Suggested Users</h1>
-                {suggestedUser && suggestedUser.slice(3,6).map((user,index)=>{
+                {suggestedUser && suggestedUser.slice(0,3).map((user,index)=>{
                     return <OtherUsers key={index} user={user}/>
                 })}
             </div>

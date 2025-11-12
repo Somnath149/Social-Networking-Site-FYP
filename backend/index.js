@@ -8,6 +8,7 @@ import userRouter from "./routes/user.route.js"
 import postRouter from "./routes/post.route.js"
 import loopRouter from "./routes/loop.route.js"
 import storyRouter from "./routes/story.route.js"
+import messageRouter from "./routes/message.route.js"
 dotenv.config()
 let app= express()
 
@@ -24,6 +25,7 @@ app.use("/api/user", userRouter)
 app.use("/api/post", postRouter)
 app.use("/api/loop", loopRouter)
 app.use("/api/story", storyRouter)
+app.use("/api/message", messageRouter)
 
 app.get('/',(req,res)=>{
     res.send("hello")
