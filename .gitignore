@@ -23,3 +23,9 @@ venv/
 ml-service/venv/
 __pycache__/
 *.pyc
+
+backend/public/
+
+# ML datasets (IGNORE ONLY DATA)
+ml-service/**/*.csv
+ml-service/*.csv

@@ -4,57 +4,65 @@ import User from "../models/user.model.js"
 
 export const uploadStory = async (req, res) => {
     try {
-        const user = await User.findById(req.userId)
+        const user = await User.findById(req.userId);
         if (!user) return res.status(404).json({ message: "User not found" });
 
         if (user.story) {
-            await Story.findByIdAndDelete(user.story)
-            user.story = null
+            await Story.findByIdAndDelete(user.story);
+            user.story = null;
         }
-        const { mediaType } = req.body
-        let media;
-        if (req.file) {
-            media = await uploadOnCloudinary(req.file.path)
-        } else {
-            return res.status(400).json({ message: "media is required" })
+
+        const { mediaType } = req.body;
+        if (!req.file) {
+            return res.status(400).json({ message: "media is required" });
         }
+
+        const uploaded = await uploadOnCloudinary(req.file.path);
+        const media = uploaded.secure_url || uploaded.url;
+
         const story = await Story.create({
-            author: req.userId, mediaType, media
-        })
-        user.story = story._id
-        await user.save()
-        const populateStory = await Story.findById(story._id).populate("author", "name userName profileImage")
-            .populate("viewers", "name userName profileImage")
-        return res.status(200).json(populateStory)
+            author: req.userId,
+            mediaType,
+            media
+        });
+
+        user.story = story._id;
+        await user.save();
+
+        const populatedStory = await Story.findById(story._id)
+            .populate("author", "name userName profileImage")
+            .populate("viewers", "name userName profileImage");
+
+        return res.status(200).json(populatedStory);
+
     } catch (error) {
         console.error("uploadStory error:", error);
         return res.status(500).json({ message: `story upload error: ${error.message}` });
-
     }
-}
+};
 
 export const viewStory = async (req, res) => {
     try {
-        const storyId = req.params.storyId
-        const story = await Story.findById(storyId)
+        const storyId = req.params.storyId;
+        const story = await Story.findById(storyId);
 
-        if (!story) {
-            return res.status(500).json({ message: "story not found" })
+        if (!story) return res.status(404).json({ message: "Story not found" });
+
+        if (!story.viewers.includes(req.userId)) {
+            story.viewers.push(req.userId);
+            await story.save();
         }
 
-        const viewerIds = story.viewers.map(id => id.toString())
-        if (!viewerIds.includes(req.userId.toString())) {
-            story.viewers.push(req.userId)
-            await story.save()
-        }
+        const populatedStory = await Story.findById(story._id)
+            .populate("author", "name userName profileImage")
+            .populate("viewers", "name userName profileImage");
 
-        const populateStory = await Story.findById(story._id).populate("author", "name userName profileImage")
-            .populate("viewers", "name userName profileImage")
-        return res.status(200).json(populateStory)
+        return res.status(200).json(populatedStory);
     } catch (error) {
-        return res.status(500).json({ message: "story view error" })
+        console.error("viewStory error:", error);
+        return res.status(500).json({ message: "Story view error" });
     }
-}
+};
 
 export const getStoryByUserName = async (req, res) => {
     try {

@@ -1,6 +1,7 @@
 import uploadOnCloudinary from "../config/cloudinary.js";
 import Conversation from "../models/conversation.model.js";
 import Message from "../models/message.model.js";
+import { getSocketId, io } from "../routes/socket.js";
 
 export const sendMessage = async (req, res) => {
   try {
@@ -8,14 +9,12 @@ export const sendMessage = async (req, res) => {
     const receiverId = req.params.receiverId;
     const { message } = req.body;
 
-    // Upload image if provided
     let image = null;
     if (req.file) {
       const uploadResult = await uploadOnCloudinary(req.file.path);
       image = uploadResult?.url || uploadResult;
     }
 
-    // Create the message
     const newMessage = await Message.create({
       sender: senderId,
       receiver: receiverId,
@@ -23,12 +22,10 @@ export const sendMessage = async (req, res) => {
       image,
     });
 
-    // Find existing conversation
     let conversation = await Conversation.findOne({
       participants: { $all: [senderId, receiverId] },
     });
 
-    // If none exists, create one
     if (!conversation) {
       conversation = await Conversation.create({
         participants: [senderId, receiverId],
@@ -39,52 +36,177 @@ export const sendMessage = async (req, res) => {
       await conversation.save();
     }
 
+    const receiverSocketId = getSocketId(receiverId)
+
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit("newMessage", newMessage)
+    }
+
     return res.status(200).json(newMessage);
   } catch (error) {
-    console.error("❌ sendMessage error:", error);
+    console.error("sendMessage error:", error);
     return res.status(500).json({ message: `send Message error = ${error.message}` });
   }
 };
 
 export const getAllMessage = async (req, res) => {
-    try {
-        const senderId = req.userId
-        const receiverId = req.params.receiverId
-        
-        let conversation = await Conversation.findOne({
-            participants:{$all:[senderId, receiverId]}
-        }).populate("messages")
+  try {
+    const senderId = req.userId
+    const receiverId = req.params.receiverId
 
-        return res.status(200).json(conversation?.messages)
+    let conversation = await Conversation.findOne({
+      participants: { $all: [senderId, receiverId] }
+    }).populate({
+      path: "messages",
+      populate: {
+        path: "post",
+        model: "Post"
+      }
+    })
+    .populate({
+      path: "messages",
+      populate: {
+        path: "loop",
+        model: "Loop"
+      }
+    });
 
-    }
-    catch (error) {
-        return res.status(500).json({ message: `get Message error= ${error}` })
-    }
+
+    return res.status(200).json(conversation?.messages)
+
+  }
+  catch (error) {
+    return res.status(500).json({ message: `get Message error= ${error}` })
+  }
 }
 
 
 export const getPrevUserChats = async (req, res) => {
-    try {
-        const currentUserId = req.userId
-        
-        let conversation = await Conversation.find({
-            participants: currentUserId
-        }).populate("participants").sort({updatedAt: -1})
+  try {
+    const currentUserId = req.userId;
 
-        const userMap={}
-        conversation.forEach(conv =>{
-            conv.participants.forEach(user =>{
-                if(user._id != currentUserId){
-                    userMap[user._id] = user
-                }
-            })
-        })
-        const previousUsers = Object.values(userMap)
-        return res.status(200).json(previousUsers)
+    const conversations = await Conversation.find({
+      participants: currentUserId
+    })
+    .populate("participants", "userName profileImage")
+    .sort({ updatedAt: -1 });
+
+    const userMap = {};
+    conversations.forEach(conv => {
+      conv.participants.forEach(user => {
+        if (user._id.toString() !== currentUserId.toString()) {
+          userMap[user._id] = user;
+        }
+      });
+    });
+
+    const previousUsers = Object.values(userMap);
+    return res.status(200).json(previousUsers);
+
+  } catch (error) {
+    return res.status(500).json({ message: `get prev chat error= ${error.message}` });
+  }
+};
+
+
+
+export const sendPostMessage = async (req, res) => {
+  try {
+    const senderId = req.userId;
+    const receiverId = req.params.receiverId;
+    const { postId } = req.body;
+
+    if (!postId) {
+      return res.status(400).json({ message: "PostId required" });
+    }
+
+    const newMessage = await Message.create({
+      sender: senderId,
+      receiver: receiverId,
+      post: postId,
+      message: "",  
+    });
+
+    let conversation = await Conversation.findOne({
+      participants: { $all: [senderId, receiverId] },
+    });
+
+    if (!conversation) {
+      conversation = await Conversation.create({
+        participants: [senderId, receiverId],
+        messages: [newMessage._id],
+      });
+    } else {
+      conversation.messages.push(newMessage._id);
+      await conversation.save();
+    }
+
+     const populatedMessage = await newMessage.populate("post");
+  
+    const receiverSocketId = getSocketId(receiverId);
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit("newMessage", populatedMessage);
 
     }
-    catch (error) {
-        return res.status(500).json({ message: `get prev chat error= ${error}` })
+   
+    return res.status(200).json(populatedMessage);
+
+
+  } catch (error) {
+    console.error("sendPostMessage error:", error);
+    return res.status(500).json({ message: "sendPostMessage error " + error.message });
+  }
+};
+
+
+export const sendLoopMessage = async (req, res) => {
+  try {
+    const senderId = req.userId;
+    const receiverId = req.params.receiverId;
+    const { loopId } = req.body;
+
+    if (!loopId) {
+      return res.status(400).json({ message: "LoopId required" });
     }
-}
+
+    const newMessage = await Message.create({
+      sender: senderId,
+      receiver: receiverId,
+      loop: loopId,
+      message: "",   
+    });
+
+    let conversation = await Conversation.findOne({
+      participants: { $all: [senderId, receiverId] },
+    });
+
+    if (!conversation) {
+      conversation = await Conversation.create({
+        participants: [senderId, receiverId],
+        messages: [newMessage._id],
+      });
+    } else {
+      conversation.messages.push(newMessage._id);
+      await conversation.save();
+    }
+     const populatedMessage = await newMessage.populate({
+  path: "loop",
+  populate: {
+    path: "author",
+    model: "User",
+    select: "userName profileImage"
+  }
+});
+
+    const receiverSocketId = getSocketId(receiverId);
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit("newMessage", populatedMessage);
+
+    }
+    return res.status(200).json(populatedMessage);
+    
+  } catch (error) {
+    console.error("sendLoopMessage error:", error);
+    return res.status(500).json({ message: "sendLoopMessage error " + error.message });
+  }
+};

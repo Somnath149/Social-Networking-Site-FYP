@@ -10,18 +10,18 @@ const storySlice = createSlice({
     reducers: {
         setStoryData: (state, action) => {
             state.storyData = action.payload
-            console.log("Inside reducer - Story data:", action.payload);
+            // console.log("Inside reducer - Story data:", action.payload);
         },
         setStoryList: (state, action) => {
             state.storyList = action.payload
-            console.log("Inside reducer - Story List:", action.payload);
+            //  console.log("Inside reducer - Story List:", action.payload);
         },
         setCurrentUserStory: (state, action) => {
             state.currentUserStory = action.payload
-            console.log("Inside reducer - Story current user story:", action.payload);
+            // console.log("Inside reducer - Story current user story:", action.payload);
         }
     }
 })
 
-export const { setStoryData , setStoryList, setCurrentUserStory } = storySlice.actions
+export const { setStoryData, setStoryList, setCurrentUserStory } = storySlice.actions
 export default storySlice.reducer

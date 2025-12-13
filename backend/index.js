@@ -9,16 +9,18 @@ import postRouter from "./routes/post.route.js"
 import loopRouter from "./routes/loop.route.js"
 import storyRouter from "./routes/story.route.js"
 import messageRouter from "./routes/message.route.js"
-dotenv.config()
-let app= express()
+import { app, server } from "./routes/socket.js"
+import threadRouter from "./routes/thread.route.js"
 
+dotenv.config()
 let port= process.env.PORT || 5000
-app.use(express.json()) //middleware use for all routes
-app.use(cookieParser())
 app.use(cors({
     origin:"http://localhost:5173",
     credentials:true
 }))
+
+app.use(cookieParser())
+app.use(express.json()) 
 
 app.use("/api/auth", authRouter)
 app.use("/api/user", userRouter)
@@ -26,12 +28,14 @@ app.use("/api/post", postRouter)
 app.use("/api/loop", loopRouter)
 app.use("/api/story", storyRouter)
 app.use("/api/message", messageRouter)
+app.use("/api/thread", threadRouter)
+
 
 app.get('/',(req,res)=>{
     res.send("hello")
 })
 
-app.listen(port,()=>{
+server.listen(port,()=>{
     console.log("server started at:",port)
     connentDB()
 })

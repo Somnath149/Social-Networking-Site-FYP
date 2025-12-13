@@ -13,16 +13,20 @@ function Signup() {
   const [err, setErr] = useState('')
   const navigate = useNavigate()
   const dispatch = useDispatch()
+  const [loading, setLoading] = useState(false)
 
   const handleSignUp = async () => {
     setErr('')
+    setLoading(true)
     try {
       const result = await axios.post(
         `${serverUrl}/api/auth/signup`,
         { name, userName, email, password },
         { withCredentials: true }
       )
-      dispatch(setUserData(result.data))
+      // SignUp me
+      dispatch(setUserData({ ...result.data.user, streamToken: result.data.streamToken }));
+
     } catch (error) {
       if (error.response) {
         setErr(error.response?.data?.message || 'Something went wrong.')
@@ -31,12 +35,15 @@ function Signup() {
         setErr('Network error, please try again.')
       }
     }
+    finally {
+      setLoading(false)
+    }
   }
 
   return (
     <div className="w-full min-h-screen bg-gradient-to-b from-black to-gray-900 flex flex-col justify-center items-center p-6">
       <div className="w-full max-w-4xl h-[600px] bg-white flex rounded-3xl overflow-hidden shadow-lg border border-gray-800">
-       
+
         <div className="w-full lg:w-1/2 flex flex-col justify-center p-10 gap-8">
           <h2 className="text-3xl font-bold text-gray-900 mb-2">Sign Up to Psync</h2>
 
@@ -102,10 +109,16 @@ function Signup() {
 
           <button
             type="button"
+            disabled={loading}
+            className={`w-full bg-black hover:bg-black/80 text-white font-semibold py-3 rounded-md flex justify-center items-center gap-2 transition ${loading ? 'opacity-60 cursor-not-allowed' : ''
+              }`}
             onClick={handleSignUp}
-            className="w-full bg-black text-white py-3 rounded-xl font-semibold hover:bg-gray-900 transition"
           >
-            Sign Up
+            {loading ? (
+              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            ) : (
+              'Sign Up'
+            )}
           </button>
 
           <p className="text-center text-gray-700 text-sm">

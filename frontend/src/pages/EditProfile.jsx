@@ -54,11 +54,11 @@ function EditProfile() {
     }
 
     return (
-        <div className='w-full min-h-[100vh]  bg-black flex items-center flex-col gap-[20px]'>
+        <div className='w-full min-h-[100vh]  bg-[var(--bg)] flex items-center flex-col gap-[20px]'>
             <div className='w-full h-[80px] flex fixed left-[20px] items-center gap-[20px] px-[20px]'>
                 <MdOutlineKeyboardBackspace onClick={() => navigate(`/profile/${userData.userName}`)}
-                    className='text-white cursor-pointer w-[25px] h-[25px]' />
-                <h1 className='text-white text-[20px] font-semibold'>Edit Profile</h1>
+                    className='text-[var(--text)] cursor-pointer w-[25px] h-[25px]' />
+                <h1 className='text-[var(--text)] text-[20px] font-semibold'>Edit Profile</h1>
             </div>
 
             <div onClick={() => imageInput.current.click()} className='w-[80px] h-[80px] md:w-[140px] md:h-[140px] border-2 border-black rounded-full cursor-pointer overflow-hidden'>
@@ -85,20 +85,22 @@ function EditProfile() {
 
 
             <div className="px-[10px] min-w-[150px] py-[5px] h-940px] bg-[white]  cursor-pointer rounded-2xl">
-            <button
-              type="button"
-              disabled={loading}
-              className={`w-full font-semibold py-3 rounded-md flex justify-center items-center gap-2 transition ${
-                loading ? 'opacity-60 cursor-not-allowed' : ''
-              }`}
-              onClick={handleEditProfile}
-            >
-              {loading ? (
-                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-              ) : (
-                'Save Profile'
-              )}
-            </button>
+                <button
+                    type="button"
+                    disabled={loading}
+                    className={`w-full font-semibold py-3 rounded-md flex justify-center items-center gap-2 transition ${loading ? 'opacity-60 cursor-not-allowed' : ''
+                        }`}
+                    onClick={handleEditProfile}
+                >
+                    {loading ? (
+                        <div className="flex items-center justify-center gap-2">
+                            <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin"></div>
+                            <span>Saving Changes...</span>
+                        </div>
+                    ) : (
+                        'Save Profile'
+                    )}
+                </button>
 
             </div>
         </div>

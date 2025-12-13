@@ -3,7 +3,7 @@ import { signIn, signOut, signUp } from "../controllers/auth.controller.js"
 import { editProfile, getCurrentUser, getProfile, suggestedUsers } from "../controllers/user.controller.js"
 import isAuth from "../middlewares/isAuth.js"
 import { upload } from "../middlewares/multer.js"
-import { comment, getAllPosts, like, saved, uploadPost } from "../controllers/post.controller.js"
+import { comment, deleteComment, deletePost, getAllPosts, getAllTrending, getPostsByTag, getTodayTrending, like, saved, uploadPost } from "../controllers/post.controller.js"
 
 const postRouter =express.Router()
 
@@ -12,5 +12,10 @@ postRouter.get("/getAll",isAuth,getAllPosts)
 postRouter.get("/saved/:postId", isAuth, saved)
 postRouter.get("/like/:postId",isAuth,like)
 postRouter.post("/comment/:postId",isAuth,comment)
+postRouter.delete("/delete/:postId", isAuth, deletePost)
+postRouter.delete("/comment/:postId/:commentId", isAuth, deleteComment)
+postRouter.get("/trending/today",isAuth, getTodayTrending);
+postRouter.get("/trending/all",isAuth, getAllTrending);
+postRouter.get("/tag/:tagName", isAuth,getPostsByTag);
 
 export default postRouter

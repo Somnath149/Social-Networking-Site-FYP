@@ -50,9 +50,10 @@ const userSchema = new mongoose.Schema({
     saved: [
         {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "User"
-        }
+            ref: "Post"
+        },   
     ],
+
     loops: [
         {
             type: mongoose.Schema.Types.ObjectId,
@@ -63,6 +64,13 @@ const userSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "Story",
     },
+    threads: [
+    {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Thread"
+    }
+]
+,
 
     resetOtp: {
         type: String

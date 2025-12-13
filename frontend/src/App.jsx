@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import SignUp from './pages/signup'
 import SignIn from './pages/SignIn'
@@ -9,12 +9,11 @@ import getCurrentUser from './hooks/getCurrentUser'
 import getSuggestedUser from './hooks/getSuggestedUser'
 import Profile from './pages/Profile'
 import { useTransition, animated } from '@react-spring/web'
-import { setUserData } from './redux/userSlice'
+import { setFollowing, setNotificationData, setUserData } from './redux/userSlice'
 import { useDispatch } from 'react-redux'
 import EditProfile from './pages/EditProfile'
 import Upload from './pages/Upload'
 import getAllpost from './hooks/getAllpost'
-
 import getAllLoops from './hooks/getAllLoops'
 import axios from "axios";
 import Loops from './pages/Loops'
@@ -22,55 +21,154 @@ import Story from './pages/Story'
 import getAllStories from './hooks/getAllStories'
 import Messages from './pages/Messages'
 import MessageArea from './pages/MessageArea'
+import { io } from "socket.io-client"
+import { setOnlineUsers, setSocket } from './redux/socketSlice'
+
+import Search from './pages/Search'
+import getAllNotifications from './hooks/getAllNotifications'
+import Notifications from './pages/Notifications'
+import getAllThreads from './hooks/getAllThreads'
+import ThreadHome from './pages/ThreadHome'
+import ForYou from './pages/ForYou'
+
+import Preloader from './pages/Preloader'
+
+import ThemeChanger from './pages/ThemeChanger'
+import AdvancedCursor from '../public/AdvancedCursor'
+import useLoopFeed from './hooks/useLoopFeed'
+import { useTrendingPost } from './hooks/useTrendingPost'
+import PostLoopTag from './pages/PostLoopTag'
+import TrendingPostLoop from './component/TrendingPostLoop'
+import useFollowingList from './hooks/getfollowingList'
+import usePrevChatUsers from './hooks/usePrevChatUsers'
 
 export const serverUrl = "http://localhost:8000"
 function App() {
-    const dispatch = useDispatch()
+  const { socket } = useSelector(state => state.socket)
+  const { userData, notificationData } = useSelector(state => state.user)
+  const dispatch = useDispatch()
+  const [loading, setLoading] = useState(true);
+  const location = useLocation()
+
+  getCurrentUser()
+  getSuggestedUser()
+  useFollowingList()
+  getAllStories()
+  getAllpost()
+  getAllLoops()
+  // usePrevChatUsers()
+  getAllNotifications()
+  getAllThreads()
+  useTrendingPost()
+
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("theme");
+    if (savedTheme) {
+      document.documentElement.className = savedTheme;
+
+      const savedCustomThemes = JSON.parse(localStorage.getItem("customThemes") || "[]");
+      const match = savedCustomThemes.find(t => t.class === savedTheme);
+
+      if (match) {
+        Object.entries(match.variables).forEach(([key, val]) => {
+          document.documentElement.style.setProperty(key, val);
+        });
+      } else {
+
+        ["--bg", "--text", "--primary", "--secondary"].forEach(v =>
+          document.documentElement.style.removeProperty(v)
+        );
+      }
+    }
+  }, []);
+
+
+  useEffect(() => {
+    if (!userData?._id) return;
+
+    const socketIo = io("http://localhost:8000", {
+      query: { userId: userData._id },
+    });
+
+    socketIo.on("connect", () => {
+      console.log("Socket connected:", socketIo.id);
+    });
+
+    dispatch(setSocket(socketIo));
+
+    socketIo.on("getOnlineUsers", (users) => {
+      dispatch(setOnlineUsers(users));
+      console.log("Online users:", users);
+    });
+
+    return () => {
+      socketIo.disconnect();
+    };
+  }, [userData?._id]);
 
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const res = await axios.get(`${serverUrl}/api/auth/me`, { withCredentials: true })
-        dispatch(setUserData(res.data))
+        const res = await axios.get(`${serverUrl}/api/auth/me`, {
+          withCredentials: true,
+        });
+
+        dispatch(setUserData(res.data));
+         dispatch(setFollowing(res.data.following))
       } catch (error) {
-        dispatch(setUserData(null)) // no logged in user
+        dispatch(setUserData(null));
+        dispatch(setFollowing([]));
       }
-    }
-    fetchUser()
-  }, [dispatch])
-  const location = useLocation()
-  const transitions = useTransition(location, {
-    from: { opacity: 0, transform: 'translateX(100%)' },
-    enter: { opacity: 1, transform: 'translateX(0%)' },
-    leave: { opacity: 0, transform: 'translateX(-50%)' },
-    config: { duration: 400 },
+      const timer = setTimeout(() => {
+        setLoading(false);
+      }, 3000);  
+      return () => clearTimeout(timer);
+    };
+
+    fetchUser();
+  }, []);
+
+
+
+  socket?.on("newNotification", (noti) => {
+    dispatch(setNotificationData([...notificationData, noti]))
   })
-  getCurrentUser()
-  getSuggestedUser()
-  getAllpost()
-  getAllLoops()
-  getAllStories()
-  const { userData } = useSelector(state => state.user)
+
+  if (loading) {
+    return (
+      <div className="w-full h-screen flex justify-center items-center bg-black">
+        <Preloader />
+      </div>
+    );
+  }
+
   return (
     <div className="relative w-full h-screen overflow-hidden">
-      {/* {transitions((style, location) => (
-        <animated.div style={style} className="absolute top-0 left-0 w-full h-full"> */}
-          <Routes location={location}>
-            <Route path='/signup' element={!userData ? <SignUp /> : <Navigate to={"/"} />} />
-            <Route path='/signin' element={!userData ? <SignIn /> : <Navigate to={"/"} />} />
-            <Route path='/forgot-password' element={!userData ? <ForgotPassword /> : <Navigate to={"/"} />} />
-            <Route path='/' element={userData ? <Home /> : <Navigate to={"/signin"} />} />
-            <Route path='/profile/:userName' element={userData ? <Profile /> : <Navigate to={"/signin"} />} />
-            <Route path='/story/:userName' element={userData ? <Story /> : <Navigate to={"/signin"} />} />
-            <Route path='/editprofile' element={userData ? <EditProfile /> : <Navigate to={"/signin"} />} />
-            <Route path='/upload' element={userData ? <Upload /> : <Navigate to={"/signin"} />} />
-            <Route path='/loops' element={userData ? <Loops /> : <Navigate to={"/signin"} />} />
-            <Route path='/messages' element={userData ? <Messages /> : <Navigate to={"/signin"} />} />
-            <Route path='/messageArea' element={userData ? <MessageArea /> : <Navigate to={"/signin"} />} />
-          </Routes>
 
-        {/* </animated.div>
-      ))} */}
+      <AdvancedCursor />
+      <Routes location={location}>
+
+
+        <Route path='/signup' element={!userData ? <SignUp /> : <Navigate to={"/"} />} />
+        <Route path='/signin' element={!userData ? <SignIn /> : <Navigate to={"/"} />} />
+        <Route path='/forgot-password' element={!userData ? <ForgotPassword /> : <Navigate to={"/"} />} />
+        <Route path='/' element={userData ? <Home /> : <Navigate to={"/signin"} />} />
+        <Route path='/profile/:userName' element={userData ? <Profile /> : <Navigate to={"/signin"} />} />
+        <Route path='/story/:userName' element={userData ? <Story /> : <Navigate to={"/signin"} />} />
+        <Route path='/editprofile' element={userData ? <EditProfile /> : <Navigate to={"/signin"} />} />
+        <Route path='/upload' element={userData ? <Upload /> : <Navigate to={"/signin"} />} />
+        <Route path='/loops' element={userData ? <Loops /> : <Navigate to={"/signin"} />} />
+        <Route path='/messages' element={userData ? <Messages /> : <Navigate to={"/signin"} />} />
+        <Route path='/messageArea' element={userData ? <MessageArea /> : <Navigate to={"/signin"} />} />
+        <Route path='/search' element={userData ? <Search /> : <Navigate to={"/signin"} />} />
+        <Route path='/notifications' element={userData ? <Notifications /> : <Navigate to={"/signin"} />} />
+        <Route path='/threads' element={userData ? <ThreadHome /> : <Navigate to={"/signin"} />} />
+        <Route path='/ForYou' element={userData ? <ForYou /> : <Navigate to={"/signin"} />} />
+        
+        <Route path="/theme" element={userData ? <ThemeChanger /> : <Navigate to={"/signin"} />} />
+        <Route path="/plhashtag/:tag" element={userData ? <PostLoopTag /> : <Navigate to={"/signin"} />} />
+        <Route path="/trendingpage" element={userData ? <TrendingPostLoop /> : <Navigate to={"/signin"} />} />
+      </Routes>
     </div>
   )
 }

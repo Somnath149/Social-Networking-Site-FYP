@@ -1,26 +1,63 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { FiVolume2 } from 'react-icons/fi'
+import { FaTrash } from "react-icons/fa";
+import { FiMoreVertical, FiVolume2 } from 'react-icons/fi'
 import { FiVolumeX } from 'react-icons/fi'
 import dp from "../assets/dp.png"
 import FollowButton from './FollowButton'
 import { FaHeart, FaRegHeart, FaRegComment, FaRegBookmark, FaBookmark, FaRegPaperPlane } from "react-icons/fa";
 import { useDispatch, useSelector } from 'react-redux'
 import { serverUrl } from '../App'
-import { setLoopData } from '../redux/loopSlice'
+import { setLoopData, updateLoopInFeed } from '../redux/loopSlice'
 import axios from 'axios'
-import { div } from 'framer-motion/client'
-function LoopCard({ loop }) {
+import { useNavigate } from 'react-router-dom'
+import { FaShare } from 'react-icons/fa6';
+import { addMessage } from '../redux/messageSlice';
+
+function LoopCard({ loop, profileTailwind }) {
+
   const videoRef = useRef()
   const commentRef = useRef()
   const dispatch = useDispatch()
+  const navigate = useNavigate()
   const [isPlaying, setIsPlaying] = useState(true)
-  const [isMuted, setIsMuted] = useState(true)
+  const [isMuted, setIsMuted] = useState(false)
   const [message, setMessage] = useState("")
   const [showComment, setShowComment] = useState(false)
   const [progress, setProgress] = useState(0)
   const [showHeart, setShowHeart] = useState(false)
   const { userData } = useSelector(state => state.user)
   const { loopData } = useSelector(state => state.loop)
+  const { socket } = useSelector(state => state.socket)
+  const [showDelete, setShowDelete] = useState(false)
+  const [followingUsers, setFollowingUsers] = useState([]);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [showFullCaption, setShowFullCaption] = useState(false);
+
+
+  const handleSharePost = async (selectedUser) => {
+    try {
+      const result = await axios.post(
+        `${serverUrl}/api/message/sendLoop/${selectedUser._id}`,
+        { loopId: loop._id },
+        { withCredentials: true }
+      );
+
+      dispatch(addMessage(result.data));
+      setShowShareModal(false);
+    } catch (error) {
+      console.error("Share loop failed:", error);
+    }
+  };
+
+  const fetchFollowingUsers = async () => {
+    const res = await axios.get(`${serverUrl}/api/user/followingList`, { withCredentials: true });
+    setFollowingUsers(res.data); // now contains userName, profileImage
+  };
+
+  useEffect(() => {
+    fetchFollowingUsers();
+  }, []);
+
   const HandleTimeUpdate = () => {
     const video = videoRef.current
     if (video) {
@@ -57,7 +94,11 @@ function LoopCard({ loop }) {
   useEffect(() => {
     const observer = new IntersectionObserver(([entry]) => {
       const video = videoRef.current
+
+      if (!video) return
+
       if (entry.isIntersecting) {
+        video.currentTime = 0;
         video.play()
         setIsPlaying(true)
       } else {
@@ -86,6 +127,8 @@ function LoopCard({ loop }) {
       )
 
       dispatch(setLoopData(updatedLoops))
+      dispatch(updateLoopInFeed(updatedLoops))
+
     } catch (error) {
       console.error("Like failed:", error)
     }
@@ -93,12 +136,16 @@ function LoopCard({ loop }) {
 
 
   const handleLikeOnDoubleClick = () => {
-    setShowHeart(true)
-    setTimeout(() =>
-      setShowHeart(false)
-      , 6000);
-    { !loop.likes?.includes(userData._id) ? handleLike() : null }
-  }
+    setShowHeart(true);
+
+    if (!loop.likes?.includes(userData._id)) {
+      handleLike();
+    }
+
+    setTimeout(() => {
+      setShowHeart(false);
+    }, 600);
+  };
 
   const handleComment = async () => {
     try {
@@ -110,6 +157,7 @@ function LoopCard({ loop }) {
       )
 
       dispatch(setLoopData(updatedLoops))
+      dispatch(updateLoopInFeed(updatedLoops))
 
       setMessage("")
     } catch (error) {
@@ -117,44 +165,139 @@ function LoopCard({ loop }) {
     }
   }
 
+  useEffect(() => {
+    socket?.on("likedLoop", (updatedLoop) => {
+      const newLoops = loopData.map(p =>
+        p._id == updatedLoop._id ? updatedLoop : p
+      )
+      dispatch(setLoopData(newLoops))
+    })
+
+    socket?.on("commentLoop", (updatedLoop) => {
+      const newLoops = loopData.map(p =>
+        p._id == updatedLoop._id ? updatedLoop : p
+      )
+      dispatch(setLoopData(newLoops))
+    })
+
+    return () => {
+      socket?.off("likedLoop")
+      socket?.off("commentLoop")
+    }
+  }, [socket, loopData, dispatch])
+
+
+  const handleDeleteComment = async (commentId) => {
+    try {
+      const result = await axios.delete(`${serverUrl}/api/loop/comment/${loop._id}/${commentId}`, { withCredentials: true })
+
+
+      const updatedLoop = result.data;
+
+      // Redux me loopData update karna
+      const updatedLoops = loopData.map(p =>
+        p._id === updatedLoop._id ? updatedLoop : p
+      );
+
+      dispatch(setLoopData(updatedLoops));
+      dispatch(updateLoopInFeed(updatedLoops))
+
+    } catch (error) {
+      console.error("Delete comment failed:", error);
+    }
+  };
+
+  const handleDeleteLoop = async () => {
+    try {
+      const result = await axios.delete(`${serverUrl}/api/loop/delete/${loop._id}`, { withCredentials: true });
+
+      // remove deleted loop from loopData
+      const updatedLoops = loopData.filter(p => p._id !== loop._id);
+      dispatch(setLoopData(updatedLoops));
+      dispatch(updateLoopInFeed(updatedLoops))
+
+    } catch (error) {
+      console.error("Delete loop failed:", error);
+    }
+  };
+
+
   return (
-    <div className='w-full lg:w-[480px] h-[100vh] flex items-center justify-center border-l-2 border-r-2 border-gray-800 relative overflow-hidden'>
+    <div className='w-full  lg:w-[480px] h-[100vh] flex flex-col items-center justify-center border-l-2 border-r-2
+     border-gray-800 relative overflow-hidden'>
 
       {showHeart && <div className='absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 heart-animation z-50'>
         <FaHeart className="w-[100px] h-[100px] drop-shadow-2xl text-white" />
       </div>}
 
+      {loop.author?._id === userData._id && <span className='absolute top-[20px] z-[100] left-[10px] '>
+        <FiMoreVertical
+          className="text-white cursor-dot1 w-6 h-6 cursor-pointer rounded-full hover:bg-gray-300 p-1"
+          onClick={(e) => {
+            e.stopPropagation();
+            setShowDelete(prev => !prev)
+          }}
+        />
+
+        {showDelete && loop.author?._id === userData._id && (
+          <div className="absolute left-5px mt-2 bg-[#111] border border-gray-700 rounded-xl shadow-lg px-3 py-2 z-20"
+          >
+            <button
+              onClick={handleDeleteLoop}
+              className="px-3 py-1 text-sm text-red-500 rounded-xl flex items-center gap-1"
+            >
+              <FaTrash className="w-4 h-4" /> Delete
+            </button>
+          </div>
+        )}
+      </span>}
+
+
       <div ref={commentRef} className={`absolute z-[200] bottom-0 w-full h-[500px] shadow-2xl shadow-black
-p-[10px] rounded-t-4xl bg-[#0e1718] transform transition-transform duration-500 ease-in-out left-0
-  ${showComment ? "translate-y-0" : "translate-y-[100%] "}`}>
+                  p-[10px] rounded-t-4xl bg-[#0e1718] transform transition-transform duration-500 ease-in-out left-0
+                  ${showComment ? "translate-y-0" : "translate-y-[100%] "}`}>
 
         <h1 className='text-white text-[20px] text-center font-semibold'>Comments</h1>
 
         <div className='w-full h-[350px] overflow-y-auto flex flex-col gap-[20px]'>
-          {loop.comments.length == 0 &&
+          {loop?.comments?.length == 0 &&
             <div className='text-center text-white text-[20px] font-semibold mt-[50px]'> No Comments Yet </div>}
 
-          {loop.comments?.map((com, index) => (
-            <div className='w-full flex flex-col gap-[5px] border-b-[1px] border-gray-800 justify-center pb-[10px] mt-[10px]'>
+          {loop?.comments?.map((com, index) => (
+            <div className='w-full flex flex-col gap-[5px] border-b-[1px] border-gray-800 justify-center pb-[10px] mt-[10px]' key={index}>
               <div className='flex justify-start items-center gap-[10px]'>
                 <div className='w-[30px] h-[30px] md:w-[40px] md:h-[40px] border-2 border-gray-300 rounded-full cursor-pointer overflow-hidden'>
-                  <img src={com.author?.profileImage || dp} alt="" className='w-full h-full object-cover' />
+                  <img src={com.author?.profileImage || dp}
+                    onClick={() => { navigate(`/profile/${com.author?.userName}`) }}
+                    alt="" className='w-full h-full object-cover' />
                 </div>
-                <div className='font-semibold text-white truncate max-w-[120px] md:max-w-[150px]'>
+                <div onClick={() => { navigate(`/profile/${com.author?.userName}`) }}
+                  className='font-semibold text-white truncate max-w-[120px] md:max-w-[150px]'>
                   {com?.author?.userName}
                 </div>
+
+                {/*show Delete button if user is the author */}
+                {com.author?._id === userData._id && (
+                  <button onClick={() => handleDeleteComment(com._id)}
+                    className='ml-auto text-red-500 text-sm'>
+                    <FaTrash className="w-5 h-5" />
+                  </button>
+                )}
+
               </div>
 
               <div className='text-white pl-[60px]'>
-                {com.message}
+                {com?.message}
               </div>
             </div>
           ))}
+
+
         </div>
 
         <div className='w-full h-[80px] flex items-center justify-between px-[10px] fixed bottom-0'>
           <div className='w-[40px] h-[40px] md:w-14 md:h-14 border-2 border-gray-300 rounded-full cursor-pointer overflow-hidden'>
-            <img src={loop.author?.profileImage || dp} alt="" className='w-full h-full object-cover' />
+            <img src={loop?.author?.profileImage || dp} alt="" className='w-full h-full object-cover' />
           </div>
 
           <input type="text" className='px-[10px] border-b-2 border-b-gray-500 text-white w-[90%] outline-none h-[40px]'
@@ -163,13 +306,16 @@ p-[10px] rounded-t-4xl bg-[#0e1718] transform transition-transform duration-500 
               <button onClick={handleComment}> <FaRegPaperPlane className="cursor-pointer text-white w-[20px] h-[20px]" /></button>
           }
         </div>
+
+
       </div>
 
       <video ref={videoRef} autoPlay muted={isMuted} loop src={loop?.media} className='w-full max-h-full'
         onClick={handleClick} onTimeUpdate={HandleTimeUpdate} onDoubleClick={handleLikeOnDoubleClick}></video>
 
       <div className='absolute top-[20px] z-[100] right-[20px]' onClick={() => setIsMuted(prev => !prev)}>
-        {!isMuted ? <FiVolume2 className='w-[20px] h-[20px] text-white font-semibold' /> : <FiVolumeX className='w-[20px] h-[20px] text-white font-semibold' />}
+        {!isMuted ? <FiVolume2 className='w-[20px] h-[20px] cursor-pointer  text-white font-semibold' /> :
+          <FiVolumeX className='w-[20px] h-[20px] cursor-pointer  text-white font-semibold' />}
       </div>
 
       <div className='absolute bottom-0 w-full h-[3px] bg-gray-900'>
@@ -179,39 +325,123 @@ p-[10px] rounded-t-4xl bg-[#0e1718] transform transition-transform duration-500 
       </div>
 
       <div className='w-full absolute h-[100px] bottom-[10px] p-[10px] flex flex-col gap-[10px]'>
-        <div className='flex items-center gap-4'>
-          <div className='w-[20px] h-[20px] md:w-[40px] md:h-[40px] border-2 border-gray-300 rounded-full cursor-pointer overflow-hidden'>
-            <img src={loop.author?.profileImage || dp} alt="" className='w-full h-full object-cover shrink-0' />
-          </div>
-          <div className='font-semibold truncate text-white max-w-[120px] md:max-w-[150px]'>
-            {loop?.author?.userName}
+
+
+
+        <div className="absolute bottom-5 left-3 z-[50] max-w-[75%]">
+
+          <div className='flex items-center gap-4'>
+            <div
+              onClick={() => { navigate(`/profile/${loop.author?.userName}`) }}
+              className='w-[20px] h-[20px] md:w-[40px] md:h-[40px] border-2 border-gray-300 rounded-full cursor-pointer overflow-hidden'>
+              <img src={loop?.author?.profileImage || dp} alt="" className='w-full h-full object-cover shrink-0' />
+            </div>
+
+            <div
+              className='font-semibold truncate text-white cursor-pointer max-w-[120px] md:max-w-[150px]'
+              onClick={() => navigate(`/profile/${loop.author?.userName}`)}
+            >
+              {loop.author?.userName}
+            </div>
+
+            {userData._id !== loop.author._id && (
+              <FollowButton
+                tailwind="px-[10px] py-[5px] text-white cursor-pointer border-2 text-[14px] rounded-2xl border-white"
+                targetUserId={loop.author._id}
+              />
+            )}
           </div>
 
-          <FollowButton targetUserId={loop.author?._id}
-            tailwind={"px-[10px] py-[5px] text-white border-2 text-[14px] rounded-2xl border-white"} />
-        </div>
-        <div className='text-white p-[10px]'>
-          {loop.caption}
+
+          <div className="text-white mt-2 leading-relaxed whitespace-pre-line">
+
+            {loop.caption?.length > 100 ? (
+              <>
+                {showFullCaption ? loop.caption : loop.caption.slice(0, 100) + "..."}
+
+                <span
+                  className="text-gray-400 ml-2 cursor-pointer hover:underline"
+                  onClick={() => setShowFullCaption(!showFullCaption)}
+                >
+                  {showFullCaption ? "Read less" : "Read more"}
+                </span>
+              </>
+            ) : (
+              loop.caption
+            )}
+
+          </div>
+
         </div>
 
         <div className='absolute right-0 flex flex-col gap-[20px] text-white bottom-[150px] justify-center p-[10px]'>
           <div className='flex flex-col items-center cursor-pointer'>
             <div onClick={handleLike}>
-              {!loop.likes.includes(userData._id) && <FaRegHeart className="w-[25px] cursor-pointer h-[25px]" />}
-              {loop.likes.includes(userData._id) && <FaHeart className="w-[25px] cursor-pointer h-[25px] text-red-600" />}</div>
-            <div>{loop.likes.length}</div>
+              {!loop?.likes?.includes(userData._id) && <FaRegHeart className="w-[25px] cursor-pointer h-[25px]" />}
+              {loop?.likes?.includes(userData._id) && <FaHeart className="w-[25px] cursor-pointer h-[25px] text-red-600" />}</div>
+            <div>{loop?.likes?.length}</div>
           </div>
+
+          {
+            showShareModal && (
+              <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
+                <div className="bg-white w-[300px] rounded-2xl p-4">
+                  <h2 className="text-lg font-bold mb-3">Share Loop To</h2>
+
+                  {/* If no following users */}
+                  {followingUsers.length === 0 && (
+                    <p className="text-gray-600 text-center py-4">
+                      You are not following anyone.
+                    </p>
+                  )}
+
+                  <div className="max-h-[250px] overflow-auto">
+                    {followingUsers.map(user => (
+                      <div key={user._id} className="flex items-center gap-3 p-2"
+                        onClick={() => handleSharePost(user)}
+                      >
+                        <img
+                          src={user.profileImage || dp}
+                          className="w-10 h-10 rounded-full"
+                        />
+                        <div>
+                          <div className="font-semibold text-[var(--text)]">{user.userName}</div>
+                          <div className="text-sm text-[var(--text)]">{user.name}</div>
+                        </div>
+                      </div>
+                    ))}
+
+                  </div>
+
+                  <button
+                    className="mt-4 w-full bg-red-500 cursor-dot1 text-[var(--text)] rounded-xl py-2"
+                    onClick={() => setShowShareModal(false)}
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            )
+          }
+
 
           <div className='flex flex-col items-center cursor-pointer'>
             <div onClick={() => setShowComment(true)}><FaRegComment className="w-[25px] cursor-pointer h-[25px]" />
             </div>
             <div>
-              <span>{loop.comments.length}</span>
+              <span>{loop?.comments?.length}</span>
             </div>
           </div>
+
+          <div className='flex justify-center items-center gap-[5px] cursor-dot1' onClick={() => setShowShareModal(true)}>
+            <FaShare className={`w-[25px] cursor-pointer h-[25px]`} />
+          </div>
+
         </div>
+
       </div>
     </div>
+
   )
 }
 

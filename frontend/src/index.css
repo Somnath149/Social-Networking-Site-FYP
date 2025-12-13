@@ -1,4 +1,5 @@
 @import "tailwindcss";
+
 *{
     scrollbar-width: none;
     -ms-overflow-style: none;
@@ -23,6 +24,327 @@
     }
 }
 
+@keyframes tiny-bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2px);
+  }
+}
+
+.tiny-bounce {
+  animation: tiny-bounce 0.9s ease-in-out infinite;
+}
+
+
+
+
+@keyframes shake {
+  0% { transform: translateX(0); }
+  25% { transform: translateX(-3px); }
+  50% { transform: translateX(3px); }
+  75% { transform: translateX(-3px); }
+  100% { transform: translateX(0); }
+}
+
+.shake-hover:hover {
+  animation: shake 0.4s ease-in-out;
+}
+
+
 .heart-animation{
     animation: heartPop 1.5s ease-out forwards;
+}
+
+/* themes.css */
+
+/* Light */
+.theme-light {
+  --primary: #2563eb;
+  --secondary: #93c5fd;
+  --bg: #ffffff;
+  --text: #0f172a;
+  --font: 'Inter', sans-serif;
+  --cursor: #000000;
+}
+
+/* Dark */
+.theme-dark {
+  --primary: #3b82f6;
+  --secondary: #1e3a8a;
+  --bg: #0f172a;
+  --text: #f1f5f9;
+  --font: 'Inter', sans-serif;
+  --cursor: #000000;
+}
+
+/* Purple */
+.theme-purple {
+  --primary: #a855f7;
+  --secondary: #d8b4fe;
+  --bg: #faf5ff;
+  --text: #3b0764;
+  --font: 'Poppins', sans-serif;
+  --cursor: #000000;
+}
+
+/* Emerald */
+.theme-emerald {
+  --primary: #10b981;
+  --secondary: #6ee7b7;
+  --bg: #f0fdfa;
+  --text: #064e3b;
+  --font: 'Merriweather', serif;
+  --cursor: #000000;
+}
+
+
+/* Orange */
+.theme-orange {
+  --primary: #fb923c;
+  --secondary: #fdba74;
+  --bg: #fff7ed;
+  --text: #7c2d12;
+  --font: 'Inter', sans-serif;
+  --cursor: #000000;
+}
+
+/* Pink */
+.theme-pink {
+  --primary: #ec4899;
+  --secondary: #f9a8d4;
+  --bg: #fdf2f8;
+  --text: #9d174d;
+  --font: 'JetBrains Mono', monospace;
+  --cursor: #000000;
+}
+
+/* 1. Ocean Blue */
+.theme-ocean {
+  --primary: #0284c7;
+  --secondary: #67e8f9;
+  --bg: #e0f2fe;
+  --text: #0c4a6e;
+  --font: 'Inter', sans-serif;
+  --cursor: #000000;
+}
+
+/* 2. Sunset */
+.theme-sunset {
+  --primary: #f43f5e;
+  --secondary: #fb7185;
+  --bg: #fff1f2;
+  --text: #9f1239;
+  --font: 'Poppins', sans-serif;
+  --cursor: #000000;
+}
+
+/* 20. Neon Glow */
+.theme-neon {
+  --primary: #0ef;
+  --secondary: #0ff;
+  --bg: #000000;
+  --text: #ffffff;
+  --font: 'JetBrains Mono', monospace;
+  --cursor: #000000;
+}
+
+/* ==========================
+   ATTRACTIVE THEME PALETTES
+   ========================== */
+
+/* --------------------------
+   1. Midnight Ocean
+   - Professional, calm, techy feel
+   -------------------------- */
+.theme-midnight-ocean {
+  --primary: #0f4c75;   /* Deep Blue – Buttons, links */
+  --secondary: #3282b8; /* Sky Blue – Hover, highlights */
+  --bg: #1b262c;        /* Dark Navy – Page background */
+  --text: #bbe1fa;      /* Soft White-Blue – Text */
+  --text: #ffffff;
+  --font: 'Inter', sans-serif;
+  --cursor: #000000;
+}
+
+/* --------------------------
+   2. Sunset Glow
+   - Warm, energetic, creative
+   -------------------------- */
+.theme-sunset-glow {
+  --primary: #ff6b6b;   /* Vibrant Red – Buttons */
+  --secondary: #feca57; /* Warm Yellow – Highlights */
+  --bg: #fff3e6;        /* Soft Peach – Background */
+  --text: #2f2f2f;      /* Dark Grey – Text */
+  --font: 'Poppins', sans-serif;
+  --cursor: #000000;
+}
+
+
+/* --------------------------
+   4. Electric Violet
+   - Creative, artistic, youth
+   -------------------------- */
+.theme-electric-violet {
+  --primary: #8a2be2;   /* Electric Purple – Buttons */
+  --secondary: #da70d6; /* Soft Magenta – Highlights */
+  --bg: #f8f0ff;        /* Light Lavender – Background */
+  --text: #2c003e;      /* Deep Purple – Text */
+  --font: 'Poppins', sans-serif;
+  --cursor: #000000;
+}
+
+
+
+
+/* --------------------------
+   8. Ocean Breeze
+   - Calm, clean, professional
+   -------------------------- */
+.theme-ocean-breeze {
+  --primary: #0284c7;   /* Deep Sky Blue – Buttons */
+  --secondary: #67e8f9; /* Light Cyan – Highlights */
+  --bg: #e0f2fe;        /* Light Blue Background */
+  --text: #0c4a6e;      /* Dark Blue – Text */
+  --font: 'Inter', sans-serif;
+  --cursor: #000000;
+}
+
+/* --------------------------
+   9. Rose Quartz
+   - Soft, romantic, gentle UI
+   -------------------------- */
+.theme-rose-quartz {
+  --primary: #f67280;   /* Rose Pink – Buttons */
+  --secondary: #ffaaa5; /* Soft Coral – Highlights */
+  --bg: #fff0f0;        /* Light Pink Background */
+  --text: #4b1c1c;      /* Dark Red – Text */
+  --font: 'Poppins', sans-serif;
+  --cursor: #000000;
+}
+
+/* --------------------------
+   10. Mint Fresh
+   - Refreshing, modern
+   -------------------------- */
+.theme-mint-fresh {
+  --primary: #22c55e;   /* Mint Green – Buttons */
+  --secondary: #86efac; /* Soft Green – Highlights */
+  --bg: #f0fdf4;        /* Very Light Green – Background */
+  --text: #166534;      /* Dark Green – Text */
+  --font: 'JetBrains Mono', monospace;
+  --cursor: #000000;
+}
+
+
+.theme-1 {
+  --primary: #393E46;
+  --secondary: #00ADB5;
+  --bg: #222831;
+  --text: #EEEEEE;
+  --font: initial;
+  --cursor: #007cb5;
+}
+
+.theme-2 {
+  --primary: #3F72AF ;
+  --secondary: #DBE2EF;
+  --bg: #F9F7F7;
+  --text: #112D4E;
+  --font: initial;
+  --cursor: #8a2be2;
+}
+
+/* Default Theme (original website look) */
+.theme-default {
+  --primary: #DCD6F7;
+  --secondary: #A6B1E1;
+  --bg: #F4EEFF;
+  --text: #424874;
+  --threaduser: #3F72AF;
+  --cursor: #27374D;
+  --font: initial;
+}
+
+/* Glow + flicker animation */
+@keyframes dimlight {
+  0%, 18%, 20%, 50.1%, 60%, 65.1%, 80%, 90.1%, 92% {
+    color: #0e3742;
+    text-shadow: none;
+  }
+  18.1%, 20.1%, 30%, 50%, 60.1%, 65%, 80.1%, 90%, 92.1%, 100% {
+    color: #fff;
+    text-shadow: 0 0 10px #03bcf4;
+  }
+}
+
+.glow-text {
+  animation: dimlight 5s infinite;
+}
+
+/* Reflection Effect */
+.box-reflect {
+  -webkit-box-reflect: below 1px linear-gradient(transparent, #0004);
+}
+
+.cursor-dot {
+  position: fixed;
+  width: 8px;
+  height: 8px;
+  background: transparent;
+  border: 2px solid var(--primary);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+  translate: -50% -50%;
+  transition: scale 0.15s ease, background 0.2s, border-color 0.2s;
+}
+
+.cursor-follower {
+  position: fixed;
+  width: 22px;
+  height: 22px;
+  border: 2px solid var(--primary);
+  
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9998;
+  translate: -50% -50%;
+  transition: width .2s, height .2s, background .2s, border-color .2s;
+}
+
+/* --------------------------
+   WHEN HOVERING .cursor-dot1
+--------------------------- */
+
+.cursor-hover-active {
+  width: 12px !important;
+  height: 12px !important;
+  background: var(--cursor);
+  border-color: var(--cursor);
+  scale: 1.3;
+}
+
+.cursor-hover-active-follower {
+  width: 32px !important;
+  height: 32px !important;
+  border-color: var(--cursor);
+  background: rgba(0,0,0,0.08);
+}
+
+*{
+  cursor: none;
+}
+
+@keyframes beat {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.25); }
+  100% { transform: scale(1); }
+}
+
+/* Chrome, Edge, Safari */
+::selection {
+  background:  var(--secondary);   /* selection background */
+  color:  var(--text);           /* selected text color */
 }

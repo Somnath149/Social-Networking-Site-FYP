@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { hashtagsSchema } from "./hashtag.model.js";
 
 const postSchema = new mongoose.Schema({
     author: {
@@ -30,7 +31,12 @@ const postSchema = new mongoose.Schema({
         message:{
             type:String
         }
-    }]
+    }],
+    shares: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+    }],
+      hashtags: hashtagsSchema
 }, { timestamps: true })
 
 const Post = mongoose.model("Post", postSchema)

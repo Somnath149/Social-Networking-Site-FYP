@@ -8,6 +8,7 @@ import { serverUrl } from '../App'
 import { setStoryData } from '../redux/storySlice'
 import { useEffect } from 'react'
 import { useState } from 'react'
+import axios from 'axios'
 
 function StoryDp({ profileImage, userName, story }) {
     const navigate = useNavigate()
@@ -31,8 +32,8 @@ function StoryDp({ profileImage, userName, story }) {
         dispatch(setStoryData(null))
         try {
             const result = await axios.get(`${serverUrl}/api/story/view/${story._id}`, { withCredentials: true })
-            dispatch(setStoryData(result.data))
-            console.log(result)
+            dispatch(setStoryData(result.data));
+            
         } catch (error) {
             console.log(error)
         }
@@ -54,21 +55,23 @@ function StoryDp({ profileImage, userName, story }) {
     }
     return (
         <div className='flex flex-col w-[80px]'>
-            <div className={`w-[80px] h-[80px] 
+            <div className={`w-[80px] h-[80px] cursor-dot1
             ${!story?null:!viewed? "bg-gradient-to-b from-blue-500 to-blue-950" : "bg-gradient-to-b from-gray-500 to-black-800"}
               rounded-full flex justify-center items-center relative`} onClick={handleClick}>
-                <div className='w-[70px] h-[70px] border-1 border-black rounded-full cursor-pointer overflow-hidden'>
+                <div className='w-[70px] h-[70px] border-1 border-[var(--primary)] rounded-full cursor-pointer overflow-hidden'>
                     <img src={profileImage || dp1} alt="" className='w-full object-cover' />
                     {!story && userName == "Your Story" && <div>
-                        <FiPlusCircle className='text-black absolute bottom-[8px] bg-white right-[10px] rounded-full w-[22px] h-[22px]' />
+                        <FiPlusCircle className='text-[var(--text)] absolute bottom-[8px]
+                         bg-[var(--primary)] right-[10px] rounded-full w-[22px] h-[22px]' />
 
                     </div>}
 
                 </div>
             </div>
-            <div className='text-[14px] text-center truncate w-full text-white'>{userName}</div>
+            <div className='text-[14px] text-center truncate w-full text-[var(--text)]'>{userName}</div>
         </div>
     )
+
 }
 
 export default StoryDp

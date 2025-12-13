@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { hashtagsSchema } from "./hashtag.model.js";
 
 const loopSchema = new mongoose.Schema({
     author: {
@@ -25,7 +26,13 @@ const loopSchema = new mongoose.Schema({
         message:{
             type:String
         }
-    }]
+    }],
+    shares: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+    }],
+
+     hashtags: hashtagsSchema
 }, { timestamps: true })
 
 const Loop = mongoose.model("Loop", loopSchema)

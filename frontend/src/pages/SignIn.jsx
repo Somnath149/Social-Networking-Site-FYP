@@ -4,27 +4,18 @@ import { serverUrl } from '../App'
 import { useNavigate } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
 import { setUserData } from '../redux/userSlice'
-import gsap from 'gsap'
-
 
 function SignIn() {
-  const containerRef = useRef(null)
-
-  useEffect(() => {
-    gsap.fromTo(
-      containerRef.current,
-      { opacity: 0, x: 50 },
-      { opacity: 1, x: 0, duration: 0.6, ease: 'power2.out' }
-    )
-  }, [])
 
   const [loading, setLoading] = useState(false)
   const [userName, setUserName] = useState('')
   const [password, setPassword] = useState('')
+  const [err, setErr] = useState('')
   const dispatch = useDispatch()
   const navigate = useNavigate()
 
   const handleSignIn = async () => {
+    setErr('')
     setLoading(true)
     try {
       const result = await axios.post(
@@ -32,12 +23,15 @@ function SignIn() {
         { userName, password },
         { withCredentials: true }
       )
-      dispatch(setUserData(result.data))
+      dispatch(setUserData({ ...result.data, streamToken: result.data.streamToken }));
+
+      navigate('/');
     } catch (error) {
       if (error.response) {
-        console.log('Server said:', error.response.status, error.response.data)
+        setErr(error.response?.data?.message || 'Something went wrong.')
       } else {
         console.error(error)
+        setErr('Network error, please try again.')
       }
     } finally {
       setLoading(false)
@@ -48,7 +42,6 @@ function SignIn() {
     <>
 
       <div
-        ref={containerRef}
         className="w-full h-screen flex items-center justify-center bg-gradient-to-tr from-[#0f0c29] via-[#302b63] to-[#24243e]"
       >
         <div className="w-[90%] lg:max-w-[60%] h-[600px] bg-white rounded-3xl flex justify-center items-center overflow-hidden shadow-xl border border-gray-700">
@@ -88,12 +81,13 @@ function SignIn() {
               Forgot Password?
             </p>
 
+            {err && <p className="text-red-600 text-sm font-semibold">{err}</p>}
+
             <button
               type="button"
               disabled={loading}
-              className={`w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 rounded-md flex justify-center items-center gap-2 transition ${
-                loading ? 'opacity-60 cursor-not-allowed' : ''
-              }`}
+              className={`w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 rounded-md flex justify-center items-center gap-2 transition ${loading ? 'opacity-60 cursor-not-allowed' : ''
+                }`}
               onClick={handleSignIn}
             >
               {loading ? (
@@ -116,7 +110,7 @@ function SignIn() {
 
           <div className="md:w-[50%] h-full hidden lg:flex justify-center items-center bg-[#1e1e2f] flex-col gap-3 text-white text-lg font-semibold">
             <p className="text-center leading-relaxed px-4">
-              “Connect, Share, and Stay <br/> Informed Safely” 🚀
+              “Connect, Share, and Stay <br /> Informed Safely” 🚀
             </p>
           </div>
         </div>

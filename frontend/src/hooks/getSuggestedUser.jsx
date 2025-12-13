@@ -2,7 +2,7 @@ import axios from 'axios'
 import React, { useEffect } from 'react'
 import { serverUrl } from '../App'
 import { useDispatch, useSelector } from 'react-redux'
-import { setSuggestedUser, setUserData } from '../redux/userSlice'
+import { setSuggestedUser } from '../redux/userSlice'
 
 function getSuggestedUser() {
     const dispatch= useDispatch()
