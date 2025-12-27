@@ -9,9 +9,11 @@ import { MdOutlineKeyboardBackspace } from "react-icons/md";
 import Post from "../component/Post";
 import Loops from "./Loops";
 import LoopCard from "../component/LoopCard";
+import { div } from "framer-motion/client";
 
 function PostLoopTag() {
     const [showPost, setShowPost] = useState(true)
+    const [showLoop, setShowLoop] = useState(false)
     const [showThread, setShowThread] = useState(false)
     const { tag } = useParams();
     const dispatch = useDispatch();
@@ -30,6 +32,7 @@ function PostLoopTag() {
 
     return (
         <div className="bg-[var(--bg)]
+        
                 min-h-screen w-full 
                 flex justify-center
                 overflow-y-scroll scrollbar-none">
@@ -63,6 +66,7 @@ function PostLoopTag() {
                 </div>
 
                 <div className="px-4 mt-3 h-[calc(100vh-90px)]  overflow-y-scroll scrollbar-none">
+
                     <div className="flex justify-around text-sm sm:text-lg">
 
                         <div
@@ -72,6 +76,7 @@ function PostLoopTag() {
                                         `}
                             onClick={() => {
                                 setShowPost(true)
+                                setShowLoop(false)
                                 setShowThread(false)
                             }}
                         >
@@ -81,63 +86,132 @@ function PostLoopTag() {
 
                         <div
                             className={`font-bold text-[var(--text)] cursor-pointer mb-3
+                                        text-base sm:text-xl px-3 sm:px-5
+                                         ${showLoop ? "border-b-4 border-blue-500" : ""}
+                                        `}
+                            onClick={() => {
+                                setShowPost(false)
+                                setShowLoop(true)
+                                setShowThread(false)
+                            }}
+                        >
+                            Trending Loops
+                        </div>
+
+                        <div
+                            className={`font-bold text-[var(--text)] cursor-pointer mb-3
                                      text-base sm:text-xl px-3 sm:px-5
                                      ${showThread ? "border-b-4 border-blue-500" : ""}
                                         `}
                             onClick={() => {
                                 setShowThread(true)
                                 setShowPost(false)
+                                setShowLoop(false)
                             }}
                         >
                             Trending Threads
                         </div>
                     </div>
-                    {tagPosts.length === 0 ? (
 
-                        <p className="text-gray-500 text-center mt-10">
-                            No posts found for #{tag}
-                        </p>
-                    ) : (
+
+                    {showPost &&
+                        tagPosts.filter(item => item.mediaType === "post").length === 0 ? (
+                            <div className="flex flex-col items-center mt-20 text-gray-400">
+                                <span className="text-5xl mb-2">🎥</span>
+                                <p className="text-sm sm:text-base">
+                                    No Posts found for <span className="text-blue-500">#{tag}</span>
+                                </p>
+                            </div>) : (
+                            <div className="flex flex-col justify-center items-center">
+
+                                {showPost &&
+                                    <>
+                                        {/* Posts */}
+                                        {tagPosts
+                                            .filter(item => item.mediaType === "post")
+                                            .map((p) => (
+                                                <div className="mt-5">
+                                                    <Post
+                                                    key={p._id}
+                                                    post={p}
+                                                    posts={tagPosts}
+                                                    setPosts={(data) => dispatch(setTagPosts(data))}
+                                                    active={true}
+                                                    disableDelete={false}
+                                                />
+                                                </div>
+                                            ))}
+                                    </>
+                                }
+                            </div>
+                        )
+                    }
+
+
+                    {
+                        showLoop && <>
+                            {tagPosts.filter(item => item.mediaType === "loop").length === 0 ?
+
+                                (<div className="flex flex-col items-center mt-20 text-gray-400">
+                                    <span className="text-5xl mb-2">🎥</span>
+                                    <p className="text-sm sm:text-base">
+                                        No loops found for <span className="text-blue-500">#{tag}</span>
+                                    </p>
+                                </div>
+                                )
+                                :
+                                (
+                                    <div className="flex flex-col justify-center items-center">
+                                        {tagPosts
+                                            .filter(item => item.mediaType === "loop")
+                                            .map((l) => (
+                                                <LoopCard
+                                                    key={l._id}
+                                                    loop={l}
+                                                    loops={tagPosts}
+                                                    setLoops={(data) => dispatch(setTagPosts(data))}
+
+                                                    fromHashTag={true}
+                                                    active={true}
+                                                    disableDelete={true}
+                                                />
+                                            ))}
+                                    </div>
+                                )
+
+                            }
+
+
+
+                        </>
+                    }
+
+                    {showThread &&
+                    tagPosts.filter(item => item.mediaType === "thread").length === 0 ? (
+
+                        <div className="flex flex-col items-center mt-20 text-gray-400">
+                            <span className="text-5xl mb-2">🎥</span>
+                            <p className="text-sm sm:text-base">
+                                No Threads found for <span className="text-blue-500">#{tag}</span>
+                            </p>
+                        </div>
+
+                        ) :
                         <div className="flex flex-col justify-center items-center">
 
-                            {showPost &&
-                                <>
-                                    {/* Posts */}
-                                    {tagPosts
-                                        .filter(item => item.mediaType === "post")
-                                        .map((p) => (
-                                            <Post
-                                                key={p._id}
-                                                post={p}
-                                                active={true}
-                                                disableDelete={false}
-                                            />
-                                        ))}
 
-                                    {/* Loops */}
-                                    {tagPosts
-                                        .filter(item => item.mediaType === "loop")
-                                        .map((l) => (
-                                            <LoopCard
-                                                key={l._id}
-                                                loop={l}
-                                                active={true}
-                                                disableDelete={true}
-                                            />
-                                        ))}
-                                </>
-                            }
+
                             {showThread &&
-                                <>
-                                   <Threads
-                                     externalThreads={tagPosts.filter(item => item.mediaType === "thread")}
-                                      HashTailwind={true}/>
+                                <div className="flex flex-col justify-center items-center">
+                                    <Threads
+                                        externalThreads={tagPosts.filter(item => item.mediaType === "thread")}
+                                        HashTailwind={true} />
 
-                                </>
+                                </div>
                             }
 
                         </div>
-                    )}
+                    }
 
                 </div>
             </div>

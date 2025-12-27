@@ -18,13 +18,19 @@ const loopSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
     }],
-    comments: [{
+     comments: [{
         author: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "User",
+            required: true,
         },
-        message:{
-            type:String
+        message: {
+            type: String,
+            required: true,
+        },
+        createdAt: {
+            type: Date,
+            default: Date.now,
         }
     }],
     shares: [{
@@ -32,7 +38,17 @@ const loopSchema = new mongoose.Schema({
         ref: "User",
     }],
 
-     hashtags: hashtagsSchema
+    hashtags: hashtagsSchema,
+
+    views: {
+        type: Number,
+        default: 0
+    },
+
+    viralScore: { type: Number, default: 0 }
+
+
+
 }, { timestamps: true })
 
 const Loop = mongoose.model("Loop", loopSchema)

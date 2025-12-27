@@ -14,8 +14,11 @@ import getFollowingList from '../hooks/getfollowingList';
 import { addMessage } from '../redux/messageSlice';
 import { FiMoreVertical } from 'react-icons/fi';
 import { FaTrash } from 'react-icons/fa6';
+import EmojiPicker from "emoji-picker-react";
+import { BsEmojiSmile } from "react-icons/bs";
 
-function Post({ post, disableProfileClick, Ssrc, onPostClick, ExploreTailwind, active, feed, disableDelete }) {
+function Post({ post, disableProfileClick, Ssrc, onPostClick, ExploreTailwind, active, feed, disableDelete, posts,
+    setPosts, }) {
 
     const dispatch = useDispatch()
     const { profileData, userData } = useSelector(state => state.user)
@@ -27,33 +30,72 @@ function Post({ post, disableProfileClick, Ssrc, onPostClick, ExploreTailwind, a
     const [showShareModal, setShowShareModal] = useState(false);
     const [message, setMessage] = useState("")
     const [showDelete, setShowDelete] = useState(false)
+    const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+
     const navigate = useNavigate()
+
+    const formatTimeAgo = (date) => {
+        const seconds = Math.floor((Date.now() - new Date(date)) / 1000);
+
+        if (seconds < 60) return "Just now";
+        if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+        if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+        if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`;
+
+        return new Date(date).toLocaleDateString("en-IN", {
+            day: "numeric",
+            month: "short",
+            year: "numeric",
+        });
+    };
+
+    const onEmojiClick = (emojiData) => {
+        setMessage(prev => prev + emojiData.emoji);
+    };
 
     const handleLike = async () => {
         try {
             const result = await axios.get(`${serverUrl}/api/post/like/${post._id}`, { withCredentials: true })
             const updatedPost = result.data
 
-            const updatedPosts = postData.map(p =>
-                p._id === post._id ? updatedPost : p
-            )
+            if (posts && setPosts) {
+                const updatedPosts = posts.map(p =>
+                    p._id === post._id ? { ...updatedPost, mediaType: p.mediaType } : p
+                );
+                setPosts(updatedPosts);
+            }
+            // ✅ feed / profile page
+            else {
+                const updatedPosts = postData.map(p =>
+                    p._id === post._id ? updatedPost : p
+                );
+                dispatch(setPostData(updatedPosts));
+            }
 
-            dispatch(setPostData(updatedPosts))
         } catch (error) {
             console.error("Like failed:", error)
         }
     }
 
     const handleComment = async () => {
+        if (!message.trim()) return;
         try {
             const result = await axios.post(`${serverUrl}/api/post/comment/${post._id}`, { message }, { withCredentials: true })
             const updatedPost = result.data
-
-            const updatedPosts = postData.map(p =>
-                p._id === post._id ? updatedPost : p
-            )
-
-            dispatch(setPostData(updatedPosts))
+            setMessage("");
+            if (posts && setPosts) {
+                const updatedPosts = posts.map(p =>
+                    p._id === post._id ? { ...updatedPost, mediaType: p.mediaType } : p
+                );
+                setPosts(updatedPosts);
+            }
+            // ✅ feed / profile page
+            else {
+                const updatedPosts = postData.map(p =>
+                    p._id === post._id ? updatedPost : p
+                );
+                dispatch(setPostData(updatedPosts));
+            }
         } catch (error) {
             console.error("Comment failed:", error)
         }
@@ -69,24 +111,31 @@ function Post({ post, disableProfileClick, Ssrc, onPostClick, ExploreTailwind, a
     }
 
     useEffect(() => {
-        socket?.on("likedPost", (updatedData) => {
-            const updatedPosts = postData.map(p =>
-                p._id == updatedData._id ? { ...p, likes: updatedData.likes } : p
-            )
-            dispatch(setPostData(updatedPosts))
-        })
+        if (!socket) return;
 
-        socket?.on("commentPost", (updatedData) => {
+        const onLike = (updatedData) => {
             const updatedPosts = postData.map(p =>
-                p._id == updatedData._id ? { ...p, comments: updatedData.comments } : p
-            )
-            dispatch(setPostData(updatedPosts))
-        })
+                p._id === updatedData._id ? { ...p, likes: updatedData.likes } : p
+            );
+            dispatch(setPostData(updatedPosts));
+        };
+
+        const onComment = (updatedData) => {
+            const updatedPosts = postData.map(p =>
+                p._id === updatedData._id ? { ...p, comments: updatedData.comments } : p
+            );
+            dispatch(setPostData(updatedPosts));
+        };
+
+        socket.on("likedPost", onLike);
+        socket.on("commentPost", onComment);
+
         return () => {
-            socket.off("likedPost")
-            socket.off("commentPost")
-        }
-    }, [socket, postData, dispatch])
+            socket?.off("likedPost", onLike);
+            socket?.off("commentPost", onComment);
+        };
+    }, [socket, postData, dispatch]);
+
 
     const handleDeletePost = async () => {
         try {
@@ -119,28 +168,53 @@ function Post({ post, disableProfileClick, Ssrc, onPostClick, ExploreTailwind, a
 
 
     useEffect(() => {
-        socket?.on("sharedPost", (updatedData) => {
+        if (!socket) return;
+
+        const onShare = (updatedData) => {
             const updatedPosts = postData.map(p =>
                 p._id === updatedData._id ? { ...p, shares: updatedData.shares } : p
             );
             dispatch(setPostData(updatedPosts));
             setShares(updatedData.shares);
-        });
+        };
+
+        socket.on("sharedPost", onShare);
 
         return () => {
-            socket?.off("sharedPost");
+            socket?.off("sharedPost", onShare);
         };
     }, [socket, postData, dispatch]);
 
+
     const fetchFollowingUsers = async () => {
         const res = await axios.get(`${serverUrl}/api/user/followingList`, { withCredentials: true });
-        setFollowingUsers(res.data); 
+        setFollowingUsers(res.data);
     };
 
     useEffect(() => {
         fetchFollowingUsers();
     }, []);
 
+    const renderCaption = (text) => {
+        return text.split(" ").map((word, index) => {
+            if (word.startsWith("#")) {
+                return (
+                    <span
+                        key={index}
+                        className="text-blue-500 cursor-pointer hover:underline mr-1"
+                        onClick={() => navigate(`/plhashtag/${word.substring(1)}`)}
+                    >
+                        {word}
+                    </span>
+                );
+            }
+            return (
+                <span key={index} className="mr-1">
+                    {word}
+                </span>
+            );
+        });
+    };
 
 
     return (
@@ -161,89 +235,87 @@ function Post({ post, disableProfileClick, Ssrc, onPostClick, ExploreTailwind, a
                             <img src={post?.author?.profileImage || dp} />
                             <div>{post?.author?.userName || "Unknown"}</div>
                         </div>
-                        
+
                         <div
                             className={`
                                  ${active ? "text-[var(--text)] font-semibold truncate max-w-[120px] md:max-w-[150px]" : "font-semibold text-[var(--text)] truncate max-w-[120px] md:max-w-[150px]"} `} >
-                            {post?.author?.userName}
+
+                            <span className="font-semibold text-[var(--text)] truncate">
+                                {post.author.userName}
+                            </span>
+
+
                         </div>
                     </div>
 
-                    {disableDelete && <span className='relative mr-0'>
+                    {disableDelete && post.author?._id === userData._id && <span className='relative mr-0'>
                         <FiMoreVertical
-                            className="text-[var(--text)]  cursor-dot1 w-6 h-6 cursor-pointer rounded-full hover:bg-gray-300 p-1"
+                            className="w-6 h-6 text-[var(--text)]
+             cursor-pointer rounded-full
+             hover:bg-gray-200/30
+             transition-all p-1"
                             onClick={(e) => {
                                 e.stopPropagation();
-                                setShowDelete(prev => !prev)
+                                setShowDelete(prev => !prev);
                             }}
                         />
 
-                        {showDelete && post.author?._id === userData._id && (
-                            <div className="absolute right-0 mt-2 bg-[#111] border border-gray-700 rounded-xl shadow-lg px-3 py-2 z-20"
+
+                        {showDelete && (
+                            <div
+                                className="absolute right-0 mt-2 w-36
+               bg-[#0f0f0f]
+               border border-gray-700
+               rounded-xl shadow-2xl
+               overflow-hidden z-50
+               animate-fadeIn"
                             >
                                 <button
                                     onClick={handleDeletePost}
-                                    className="px-3 py-1 text-sm text-red-500 rounded-xl flex items-center gap-1"
+                                    className="w-full px-4 py-3
+                 flex items-center gap-2
+                 text-sm text-red-500
+                 hover:bg-red-500/10
+                 transition-all"
                                 >
-                                    <FaTrash className="w-4 h-4" /> Delete
+                                    <FaTrash className="w-4 h-4" />
+                                    Delete Post
                                 </button>
                             </div>
                         )}
+
                     </span>}
 
 
-                    {active && <>
-                        {userData._id != post.author._id &&
-                            <FollowButton tailwind={'px-4 md:px-5 py-1 md:py-2 rounded-2xl text-sm md:text-base bg-black text-[var(--text)] hover:bg-gray-800 transition'}
-                                targetUserId={post.author._id} />}
-                    </>}
+
+                    {userData._id != post.author._id &&
+                        <FollowButton tailwind={'px-4 md:px-5 py-1 md:py-2 rounded-2xl text-sm md:text-base bg-black text-white hover:bg-gray-800 transition'}
+                            targetUserId={post.author._id} />}
+
 
                 </div>
 
             </>}
 
-            {/* <div className="w-full flex items-center  justify-center">
-                {post.mediaType === "image" && (
-                    <div className="w-full h-auto flex items-center justify-center">
-                        <img
-                            src={post.media}
-                            alt=""
-                            className={`w-full min-w-full h-auto object-cover rounded-2xl 
-                                ${!ExploreTailwind ? "" : ""}
-                                `}
-                        />
-                    </div>
-                )}
-
-                {post.mediaType === "video" && (
-                    <div className={`w-full max-w-[500px] flex items-center justify-center 
-                                
-                                `}>
-                        <VideoPlayer media={post.media} active={active} feed={feed} />
-                    </div>
-                )}
-            </div> */}
-
-
             <div className="w-full flex items-center justify-center">
-  {post.media && (
-    <>
-      {post.media.endsWith(".mp4") ? (
-        <div className="w-full max-w-[500px] flex items-center justify-center">
-          <VideoPlayer media={post.media} active={active} feed={feed} />
-        </div>
-      ) : (
-        <div className="w-full h-auto flex items-center justify-center">
-          <img
-            src={post.media}
-            alt=""
-            className={`w-full min-w-full h-auto object-cover rounded-2xl`}
-          />
-        </div>
-      )}
-    </>
-  )}
-</div>
+                {post.media && (
+                    <>
+                        {post.media.endsWith(".mp4") ? (
+                            <div className="w-full max-w-[500px] flex items-center justify-center">
+                                <VideoPlayer media={post.media} active={active} feed={feed} />
+                            </div>
+                        ) : (
+                            <div className="w-full h-auto flex items-center justify-center">
+                                <img
+                                    src={post.media}
+                                    alt=""
+                                    className={`w-full min-w-full h-auto object-cover rounded-2xl`}
+                                />
+                            </div>
+                        )}
+                    </>
+                )}
+            </div>
 
 
             {!ExploreTailwind && <>
@@ -286,7 +358,7 @@ function Post({ post, disableProfileClick, Ssrc, onPostClick, ExploreTailwind, a
 
                 {
                     showShareModal && (
-                        <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
+                        <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-99">
                             <div className="bg-white w-[300px] rounded-2xl p-4">
                                 <h2 className="text-lg font-bold mb-3">Share Loop To</h2>
 
@@ -307,8 +379,8 @@ function Post({ post, disableProfileClick, Ssrc, onPostClick, ExploreTailwind, a
                                                 className="w-10 h-10 rounded-full"
                                             />
                                             <div>
-                                                <div className="font-semibold text-[var(--text)]">{user.userName}</div>
-                                                <div className="text-sm text-[var(--text)]">{user.name}</div>
+                                                <div className="font-semibold text-black">{user.userName}</div>
+                                                <div className="text-sm text-gray-500">{user.name}</div>
                                             </div>
                                         </div>
                                     ))}
@@ -328,23 +400,72 @@ function Post({ post, disableProfileClick, Ssrc, onPostClick, ExploreTailwind, a
 
                 {post.caption && <div className={`w-full px-[20px] gap-[10px] flex justify-start items-center
                                  ${active ? "text-[var(--text)]" : "text-[var(--text)]"} `}>
-                    <h1>{post.author.userName}</h1>
-                    <div>{post.caption}</div>
+                    <div className="flex flex-col">
+                        <span className="font-semibold text-[var(--text)] truncate">
+                            {post.author.userName}
+                        </span>
+                        <span className="text-xs text-gray-400">
+                            {formatTimeAgo(post.createdAt)}
+                        </span>
+                    </div>
+
+                    <span className="flex flex-wrap">
+                        {renderCaption(post.caption)}
+                    </span>
                 </div>}
 
                 {showComment &&
                     <div className='w-full text-[var(--text)] flex flex-col gap-[30px] pb-[20px]'>
-                        <div className={`w-full h-[80px] flex items-center justify-between px-[20px] relative
-                             ${active ? "text-[var(--text)]" : "text-[var(--text)]"}`}>
-                            <div className='w-[40px] h-[40px] md:w-14 md:h-14 border-2 border-gray-300 rounded-full cursor-pointer overflow-hidden'>
-                                <img src={post.author?.profileImage || dp} alt="" className='w-full h-full object-cover' />
+                        <div className="w-full h-[80px] flex items-center gap-3 px-[20px] relative">
+
+                            {/* Profile image */}
+                            <div className="w-[40px] h-[40px] md:w-14 md:h-14 border-2 border-gray-300 rounded-full overflow-hidden">
+                                <img
+                                    src={post.author?.profileImage || dp}
+                                    className="w-full h-full object-cover"
+                                />
                             </div>
 
-                            <input type="text" className='px-[10px] border-b-2 border-b-gray-500 w-[90%] outline-none h-[40px]'
-                                onChange={(e) => setMessage(e.target.value)} value={message}
-                                placeholder='write comment...' />
-                            <button onClick={handleComment}> <FaRegPaperPlane className=" cursor-dot1 cursor-pointer w-[20px] h-[20px]" /></button>
+                            {/* Input */}
+                            <input
+                                type="text"
+                                className="flex-1 px-3 border-b-2 border-gray-500 outline-none h-[40px] bg-transparent"
+                                value={message}
+                                onChange={(e) => setMessage(e.target.value)}
+                                placeholder="Write a comment..."
+                            />
+
+                            {/* Emoji button */}
+                            <button
+                                type="button"
+                                className="text-xl cursor-dot1"
+                                onClick={() => setShowEmojiPicker(prev => !prev)}
+                            >
+                                <BsEmojiSmile />
+                            </button>
+
+                            {/* Send */}
+                            <button
+                                type="button"
+                                onClick={handleComment}
+                                className="text-xl cursor-dot1"
+                            >
+                                <FaRegPaperPlane />
+                            </button>
+
+                            {/* Emoji Picker */}
+                            {showEmojiPicker && (
+                                <div className="absolute bottom-[90px] right-5 z-50">
+                                    <EmojiPicker
+                                        theme="dark"
+                                        onEmojiClick={onEmojiClick}
+                                        height={350}
+                                        width={300}
+                                    />
+                                </div>
+                            )}
                         </div>
+
 
                         <div className='w-full max-h-[300px] overflow-auto'>
 
@@ -357,7 +478,14 @@ function Post({ post, disableProfileClick, Ssrc, onPostClick, ExploreTailwind, a
                                                 else onPostClick && onPostClick();
                                             }} alt="" className='w-full h-full object-cover' />
                                     </div>
-                                    <div className={`${active ? "text-[var(--text)]" : ""}`}>{com.message}</div>
+                                    <div className={`${active ? "text-[var(--text)]" : ""}`}>
+                                        <div className="flex flex-col">
+                                            <span className="text-sm">{com.message}</span>
+                                            <span className="text-xs text-gray-400">
+                                                {formatTimeAgo(com.createdAt)}
+                                            </span>
+                                        </div>
+                                    </div>
 
                                     {userData._id === com.author?._id && (
                                         <button

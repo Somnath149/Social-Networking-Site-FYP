@@ -4,6 +4,7 @@ import { FiVolume2, FiVolumeX } from 'react-icons/fi';
 function VideoPlayer({ media, active, feed }) {
   const [isPlaying, setIsPlaying] = useState(true)
   const [isMuted, setIsMuted] = useState(true)
+  const [isLoading, setIsLoading] = useState(true);
   const videoRef = useRef()
   useEffect(() => {
     const video = videoRef.current;
@@ -47,7 +48,20 @@ function VideoPlayer({ media, active, feed }) {
         src={media}
         playsInline
         muted={!active && isMuted}
+        
+        onLoadStart={() => setIsLoading(true)}     
+        onLoadedData={() => setIsLoading(false)}    
+        onCanPlay={() => setIsLoading(false)}       
+        onWaiting={() => setIsLoading(true)}     
+        onPlaying={() => setIsLoading(false)}      
+        onStalled={() => setIsLoading(true)}
         preload="auto" className='h-[100%] cursor-pointer w-full object-cover rounded-2xl'></video>
+
+        {isLoading && (
+        <div className="absolute inset-0 z-[200] flex items-center justify-center bg-black/40">
+          <div className="w-10 h-10 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      )}
     </div>
   )
 

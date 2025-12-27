@@ -12,7 +12,7 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-const sendMail= async (to,otp) => {
+export const sendMail= async (to,otp) => {
     await transporter.sendMail({
         from:`${process.env.EMAIL}`,
         to,
@@ -21,4 +21,19 @@ const sendMail= async (to,otp) => {
     })
 }
 
-export default sendMail
+export const usersMail = async ({ from, userName, issue }) => {
+  await transporter.sendMail({
+    from: `"Psync Support" <${process.env.EMAIL}>`,
+    to: process.env.EMAIL, // admin/support email
+    replyTo: from, // user ko reply kar sake
+    subject: `Support Request from ${userName || from}`,
+    html: `
+      <h3>New Support Request</h3>
+      <p><b>User Email:</b> ${from}</p>
+      <p><b>Username:</b> ${userName}</p>
+      <p><b>Issue:</b></p>
+      <p>${issue}</p>
+    `
+  });
+};
+

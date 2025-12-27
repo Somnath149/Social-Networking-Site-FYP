@@ -26,9 +26,13 @@ function Search() {
     }
 
     useEffect(() => {
-        handleSearch()
+    if (input.trim() === "") {
+        dispatch(setSearchData([]))
+        return
+    }
+    handleSearch()
+}, [input])
 
-    }, [input])
 
     return (
         <div className='w-full min-h-[100vh]  bg-[var(--bg)] flex items-center flex-col gap-[20px]'>
@@ -51,6 +55,7 @@ function Search() {
                 searchData?.map((user) => (
                     <div className='w-[90vw] max-w-[700px] h-[60px] rounded-full bg-white flex
                      cursor-pointer items-center gap-[20px] px-[5px] hover:bg-gray-200'
+                     key={user._id}
                         onClick={() => navigate(`/profile/${user?.userName}`)}>
                         <div className='w-[50px] h-[50px] border-2 border-black rounded-full overflow-hidden'
                         >

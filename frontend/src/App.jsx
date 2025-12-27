@@ -23,16 +23,13 @@ import Messages from './pages/Messages'
 import MessageArea from './pages/MessageArea'
 import { io } from "socket.io-client"
 import { setOnlineUsers, setSocket } from './redux/socketSlice'
-
 import Search from './pages/Search'
 import getAllNotifications from './hooks/getAllNotifications'
 import Notifications from './pages/Notifications'
 import getAllThreads from './hooks/getAllThreads'
 import ThreadHome from './pages/ThreadHome'
 import ForYou from './pages/ForYou'
-
 import Preloader from './pages/Preloader'
-
 import ThemeChanger from './pages/ThemeChanger'
 import AdvancedCursor from '../public/AdvancedCursor'
 import useLoopFeed from './hooks/useLoopFeed'
@@ -41,6 +38,8 @@ import PostLoopTag from './pages/PostLoopTag'
 import TrendingPostLoop from './component/TrendingPostLoop'
 import useFollowingList from './hooks/getfollowingList'
 import usePrevChatUsers from './hooks/usePrevChatUsers'
+import useAllUserScore from './hooks/useAllUserScore'
+import Settings from './pages/Setting'
 
 export const serverUrl = "http://localhost:8000"
 function App() {
@@ -56,31 +55,39 @@ function App() {
   getAllStories()
   getAllpost()
   getAllLoops()
-  // usePrevChatUsers()
   getAllNotifications()
   getAllThreads()
   useTrendingPost()
 
-  useEffect(() => {
-    const savedTheme = localStorage.getItem("theme");
-    if (savedTheme) {
-      document.documentElement.className = savedTheme;
+    useEffect(() => {
+  const savedTheme = localStorage.getItem("theme") || "theme-default";
+  document.documentElement.className = savedTheme;
 
-      const savedCustomThemes = JSON.parse(localStorage.getItem("customThemes") || "[]");
-      const match = savedCustomThemes.find(t => t.class === savedTheme);
+  const resetVars = () => {
+    ["--bg", "--text", "--primary", "--secondary", "--cursor"].forEach(v =>
+      document.documentElement.style.removeProperty(v)
+    );
+  };
 
-      if (match) {
-        Object.entries(match.variables).forEach(([key, val]) => {
-          document.documentElement.style.setProperty(key, val);
-        });
-      } else {
+  if (savedTheme === "theme-default") {
+    resetVars();
+    return;
+  }
 
-        ["--bg", "--text", "--primary", "--secondary"].forEach(v =>
-          document.documentElement.style.removeProperty(v)
-        );
-      }
-    }
-  }, []);
+  const savedCustomThemes = JSON.parse(
+    localStorage.getItem("customThemes") || "[]"
+  );
+
+  const match = savedCustomThemes.find(t => t.class === savedTheme);
+
+  if (match?.variables) {
+    Object.entries(match.variables).forEach(([key, val]) => {
+      document.documentElement.style.setProperty(key, val);
+    });
+  } else {
+    resetVars();
+  }
+}, []);
 
 
   useEffect(() => {
@@ -114,14 +121,14 @@ function App() {
         });
 
         dispatch(setUserData(res.data));
-         dispatch(setFollowing(res.data.following))
+        dispatch(setFollowing(res.data.following))
       } catch (error) {
         dispatch(setUserData(null));
         dispatch(setFollowing([]));
       }
-      const timer = setTimeout(() => {
+      finally {
         setLoading(false);
-      }, 3000);  
+      }
       return () => clearTimeout(timer);
     };
 
@@ -147,8 +154,6 @@ function App() {
 
       <AdvancedCursor />
       <Routes location={location}>
-
-
         <Route path='/signup' element={!userData ? <SignUp /> : <Navigate to={"/"} />} />
         <Route path='/signin' element={!userData ? <SignIn /> : <Navigate to={"/"} />} />
         <Route path='/forgot-password' element={!userData ? <ForgotPassword /> : <Navigate to={"/"} />} />
@@ -164,10 +169,11 @@ function App() {
         <Route path='/notifications' element={userData ? <Notifications /> : <Navigate to={"/signin"} />} />
         <Route path='/threads' element={userData ? <ThreadHome /> : <Navigate to={"/signin"} />} />
         <Route path='/ForYou' element={userData ? <ForYou /> : <Navigate to={"/signin"} />} />
-        
         <Route path="/theme" element={userData ? <ThemeChanger /> : <Navigate to={"/signin"} />} />
         <Route path="/plhashtag/:tag" element={userData ? <PostLoopTag /> : <Navigate to={"/signin"} />} />
         <Route path="/trendingpage" element={userData ? <TrendingPostLoop /> : <Navigate to={"/signin"} />} />
+        <Route path="/setting" element={userData ? <Settings /> : <Navigate to={"/signin"} />} />
+        {/* <Route path="/admin" element={userData ? <Admin /> : <Navigate to={"/signin"} />} /> */}
       </Routes>
     </div>
   )

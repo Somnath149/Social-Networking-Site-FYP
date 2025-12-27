@@ -12,7 +12,7 @@ function Nav({ theme }) {
     return (
         <div className='
             w-[90%] lg:w-[40%] h-[80px] flex justify-around items-center
-            fixed bottom-[20px] rounded-full z-[100]
+            fixed bottom-[20px] rounded-full z-[111]
             backdrop-blur-xl bg-gradient-to-r from-gray-900/80 via-black/50 to-gray-900/80
             shadow-lg shadow-blue-400/50 border border-blue-400/30
         '>

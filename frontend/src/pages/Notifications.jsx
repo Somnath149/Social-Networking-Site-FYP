@@ -49,12 +49,24 @@ function Notifications({ threadTailwind }) {
             <div className='w-full h-[80px] flex left-[20px] items-center gap-[20px] px-[20px] lg:hidden'>
                 <MdOutlineKeyboardBackspace
                     onClick={() => navigate(`/`)}
-                    className='text-white cursor-pointer w-[25px] h-[25px]'
+                    className='text-[var(--text)] cursor-pointer w-[25px] h-[25px]'
                 />
-                <h1 className='text-white text-[20px] font-semibold'>Notifications</h1>
+                <h1 className='text-[var(--text)] text-[20px] font-semibold'>Notifications</h1>
             </div>
 
-            {threadTailwind && <h1 className='text-white text-[20px] p-[20px] font-semibold'>Notifications</h1>}
+            {threadTailwind && <h1 className='text-[var(--text)] text-[20px] p-[20px] font-semibold'>Notifications</h1>}
+            {notificationData?.length === 0 && (
+  <div className="flex flex-col items-center justify-center py-10 text-center">
+    <span className="text-4xl mb-2">🔔</span>
+    <span className="text-sm sm:text-base text-gray-400">
+      No notifications yet
+    </span>
+    <span className="text-xs text-gray-500 mt-1">
+      You’re all caught up ✨
+    </span>
+  </div>
+)}
+
             <motion.div
                 className="w-full flex flex-col gap-[20px] h-[100%] p-[10px]"
                 initial="hidden"

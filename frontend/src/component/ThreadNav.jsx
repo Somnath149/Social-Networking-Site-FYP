@@ -19,6 +19,7 @@ import { setUserData } from "../redux/userSlice";
 import { serverUrl } from "../App";
 import dp1 from "../assets/dp1.jpeg"
 import axios from "axios";
+import { FaCrown } from "react-icons/fa6";
 
 
 function ThreadNav({ setCenterView, setShowOtherUsers, setShowTrends }) {
@@ -89,11 +90,11 @@ function ThreadNav({ setCenterView, setShowOtherUsers, setShowTrends }) {
                         hover:scale-110'
                         />Messages</div>
 
-                    {/* <div className="flex text-[var(--text)] justify-start cursor-pointer gap-4">
-                        <PiSparkleFill className='text-[var(--text)] w-[25px] h-[25px] cursor-pointer  transition-transform
+                    <div className="flex text-[var(--text)] justify-start cursor-pointer gap-4" onClick={() => setCenterView("king")}>
+                        <FaCrown className='text-[var(--text)] w-[25px] h-[25px] cursor-pointer  transition-transform
                         duration-150
                         hover:scale-110'
-                            onClick={() => navigate(`/threads`)} />Grok</div> */}
+                            onClick={() => navigate(`/threads`)} />Kings</div>
 
                     <div className="flex  text-[var(--text)] justify-start cursor-dot1 cursor-pointer gap-4" onClick={() => navigate(`/profile/${userData.userName}`)}>
                         <RiUser3Line className='text-[var(--text)] w-[25px] h-[25px] cursor-pointer  transition-transform

@@ -12,9 +12,16 @@ import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
 import { FaShare } from 'react-icons/fa6';
 import { addMessage } from '../redux/messageSlice';
+import EmojiPicker from "emoji-picker-react";
+import { BsEmojiSmile } from "react-icons/bs";
 
-function LoopCard({ loop, profileTailwind }) {
 
+function LoopCard({ loop, profileTailwind, loops,setLoops,fromHashTag = false }) {
+  const [viewAdded, setViewAdded] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const viewTimerRef = useRef(null);
+  const viewAddedRef = useRef(false);
   const videoRef = useRef()
   const commentRef = useRef()
   const dispatch = useDispatch()
@@ -33,6 +40,24 @@ function LoopCard({ loop, profileTailwind }) {
   const [showShareModal, setShowShareModal] = useState(false);
   const [showFullCaption, setShowFullCaption] = useState(false);
 
+  const formatTimeAgo = (date) => {
+    const seconds = Math.floor((Date.now() - new Date(date)) / 1000);
+
+    if (seconds < 60) return "Just now";
+    if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+    if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+    if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`;
+
+    return new Date(date).toLocaleDateString("en-IN", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    });
+  };
+
+  const onEmojiClick = (emojiData) => {
+    setMessage(prev => prev + emojiData.emoji);
+  };
 
   const handleSharePost = async (selectedUser) => {
     try {
@@ -91,48 +116,117 @@ function LoopCard({ loop, profileTailwind }) {
   }, [showComment])
 
 
+  const addView = async () => {
+    try {
+      const res = await axios.put(
+        `${serverUrl}/api/loop/view/${loop._id}`,
+        {},
+        { withCredentials: true }
+      );
+
+      const updatedLoop = res.data;
+
+      const updatedLoops = loopData.map(p =>
+        p._id === updatedLoop._id ? updatedLoop : p
+      );
+
+      dispatch(setLoopData(updatedLoops));
+      dispatch(updateLoopInFeed(updatedLoops));
+    } catch (error) {
+      console.error("Add view failed:", error);
+    }
+  };
+
+
+  // useEffect(() => {
+  //   const observer = new IntersectionObserver(([entry]) => {
+  //     const video = videoRef.current
+
+  //     if (!video) return
+
+  //     if (entry.isIntersecting) {
+  //       video.currentTime = 0;
+  //       video.play()
+  //       setIsPlaying(true)
+  //     } else {
+  //       video.pause()
+  //       setIsPlaying(false)
+  //     }
+  //   }, { threshold: 0.6 })
+  //   if (videoRef.current) {
+  //     observer.observe(videoRef.current)
+  //   }
+
+  //   return () => {
+  //     if (videoRef.current) {
+  //       observer.unobserve(videoRef.current)
+  //     }
+  //   }
+  // }, [])
+
   useEffect(() => {
     const observer = new IntersectionObserver(([entry]) => {
-      const video = videoRef.current
-
-      if (!video) return
-
+      const video = videoRef.current;
+      if (!video) return;
       if (entry.isIntersecting) {
         video.currentTime = 0;
-        video.play()
-        setIsPlaying(true)
-      } else {
-        video.pause()
-        setIsPlaying(false)
+        if (video.paused) {
+          video.play();
+          setIsPlaying(true);
+        }
+        if (!viewAddedRef.current) {
+          viewTimerRef.current = setTimeout(() => {
+            addView();
+            viewAddedRef.current = true;
+          }, 2000);
+        }
       }
-    }, { threshold: 0.6 })
-    if (videoRef.current) {
-      observer.observe(videoRef.current)
-    }
+      else {
+        video.pause();
+        setIsPlaying(false);
+        if (viewTimerRef.current) {
+          clearTimeout(viewTimerRef.current);
+        }
+      }
+    },
+      { threshold: 0.6 });
+    observer.observe(videoRef.current);
+    return () => observer.disconnect();
+  }, []);
 
-    return () => {
-      if (videoRef.current) {
-        observer.unobserve(videoRef.current)
-      }
-    }
-  }, [])
 
   const handleLike = async () => {
     try {
-      const result = await axios.get(`${serverUrl}/api/loop/like/${loop._id}`, { withCredentials: true })
-      const updatedLoop = result.data
+      const res = await axios.get(
+        `${serverUrl}/api/loop/like/${loop._id}`,
+        { withCredentials: true }
+      );
 
-      const updatedLoops = loopData.map(p =>
-        p._id == loop._id ? updatedLoop : p
-      )
+      const updatedLoop = res.data;
 
-      dispatch(setLoopData(updatedLoops))
-      dispatch(updateLoopInFeed(updatedLoops))
+      if (fromHashTag && loops && setLoops) {
+        const updated = loops.map(l =>
+          l._id === loop._id
+            ? { ...l, ...updatedLoop }
+            : l
+        );
+        setLoops(updated);
+      }
 
-    } catch (error) {
-      console.error("Like failed:", error)
+      else {
+        const updated = loopData.map(l =>
+          l._id === loop._id
+            ? { ...l, ...updatedLoop }
+            : l
+        );
+        dispatch(setLoopData(updated));
+        dispatch(updateLoopInFeed(updated));
+      }
+
+    } catch (err) {
+      console.error("Like failed:", err);
     }
-  }
+  };
 
 
   const handleLikeOnDoubleClick = () => {
@@ -149,21 +243,38 @@ function LoopCard({ loop, profileTailwind }) {
 
   const handleComment = async () => {
     try {
-      const result = await axios.post(`${serverUrl}/api/loop/comment/${loop._id}`, { message }, { withCredentials: true })
-      const updatedLoop = result.data
+      const res = await axios.post(
+        `${serverUrl}/api/loop/comment/${loop._id}`,
+        { message },
+        { withCredentials: true }
+      );
 
-      const updatedLoops = loopData.map(p =>
-        p._id == loop._id ? updatedLoop : p
-      )
+      setMessage("");
+      const updatedLoop = res.data;
 
-      dispatch(setLoopData(updatedLoops))
-      dispatch(updateLoopInFeed(updatedLoops))
+      if (fromHashTag && loops && setLoops) {
+        const updated = loops.map(l =>
+          l._id === loop._id
+            ? { ...l, ...updatedLoop }
+            : l
+        );
+        setLoops(updated);
+      } else {
+        const updated = loopData.map(l =>
+          l._id === loop._id
+            ? { ...l, ...updatedLoop }
+            : l
+        );
+        dispatch(setLoopData(updated));
+        dispatch(updateLoopInFeed(updated));
+      }
 
-      setMessage("")
-    } catch (error) {
-      console.error("Comment failed:", error)
+      setMessage("");
+
+    } catch (err) {
+      console.error("Comment failed:", err);
     }
-  }
+  };
 
   useEffect(() => {
     socket?.on("likedLoop", (updatedLoop) => {
@@ -221,9 +332,43 @@ function LoopCard({ loop, profileTailwind }) {
     }
   };
 
+  useEffect(() => {
+    socket?.on("loopViewed", (updatedLoop) => {
+      const updatedLoops = loopData.map(p =>
+        p._id === updatedLoop._id ? updatedLoop : p
+      );
+
+      dispatch(setLoopData(updatedLoops));
+      dispatch(updateLoopInFeed(updatedLoops));
+    });
+
+    return () => {
+      socket?.off("loopViewed");
+    };
+  }, [socket, loopData, dispatch]);
+
+
+  const renderCaption = (text) => {
+    return text.split(" ").map((word, index) => {
+      if (word.startsWith("#")) {
+        return (
+          <span
+            key={index}
+            className="text-blue-500 cursor-pointer hover:underline"
+            onClick={() => navigate(`/plhashtag/${word.substring(1)}`)}
+          >
+            {word}{" "}
+          </span>
+        );
+      }
+      return <span key={index}>{word} </span>;
+    });
+  };
+
 
   return (
-    <div className='w-full  lg:w-[480px] h-[100vh] flex flex-col items-center justify-center border-l-2 border-r-2
+
+    <div className='w-full  lg:w-[480px] h-[100vh] bg-black flex flex-col items-center justify-center border-l-2 border-r-2
      border-gray-800 relative overflow-hidden'>
 
       {showHeart && <div className='absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 heart-animation z-50'>
@@ -286,8 +431,15 @@ function LoopCard({ loop, profileTailwind }) {
 
               </div>
 
-              <div className='text-white pl-[60px]'>
-                {com?.message}
+
+              <div className="flex flex-col">
+                <span className="font-semibold text-white pl-[60px] max-w-[120px] md:max-w-[150px]"
+                  onClick={() => navigate(`/profile/${loop.author?.userName}`)}>
+                  {com?.message}
+                </span>
+                <span className="text-xs text-gray-400">
+                  {formatTimeAgo(com?.createdAt)}
+                </span>
               </div>
             </div>
           ))}
@@ -295,23 +447,83 @@ function LoopCard({ loop, profileTailwind }) {
 
         </div>
 
-        <div className='w-full h-[80px] flex items-center justify-between px-[10px] fixed bottom-0'>
-          <div className='w-[40px] h-[40px] md:w-14 md:h-14 border-2 border-gray-300 rounded-full cursor-pointer overflow-hidden'>
-            <img src={loop?.author?.profileImage || dp} alt="" className='w-full h-full object-cover' />
+        <div className="w-full h-[80px] flex text-[var(--text)] items-center gap-3 px-[20px] relative">
+
+          {/* Profile image */}
+          <div className="w-[40px] h-[40px] md:w-14 md:h-14 border-2 border-gray-300 rounded-full overflow-hidden">
+            <img
+              src={loop.author?.profileImage || dp}
+              className="w-full h-full object-cover"
+            />
           </div>
 
-          <input type="text" className='px-[10px] border-b-2 border-b-gray-500 text-white w-[90%] outline-none h-[40px]'
-            onChange={(e) => setMessage(e.target.value)} value={message}
-            placeholder='write comment...' /> {message &&
-              <button onClick={handleComment}> <FaRegPaperPlane className="cursor-pointer text-white w-[20px] h-[20px]" /></button>
-          }
+          {/* Input */}
+          <input
+            type="text"
+            className="flex-1 px-3 border-b-2 border-gray-500 outline-none h-[40px] bg-transparent"
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            placeholder="Write a comment..."
+          />
+
+          {/* Emoji button */}
+          <button
+            type="button"
+            className="text-xl cursor-dot1"
+            onClick={() => setShowEmojiPicker(prev => !prev)}
+          >
+            <BsEmojiSmile />
+          </button>
+
+          {/* Send */}
+          <button
+            type="button"
+            onClick={handleComment}
+            className="text-xl cursor-dot1"
+          >
+            <FaRegPaperPlane />
+          </button>
+
+          {/* Emoji Picker */}
+          {showEmojiPicker && (
+            <div className="absolute bottom-[90px] right-5 z-50">
+              <EmojiPicker
+                theme="dark"
+                onEmojiClick={onEmojiClick}
+                height={350}
+                width={300}
+              />
+            </div>
+          )}
         </div>
 
 
       </div>
 
-      <video ref={videoRef} autoPlay muted={isMuted} loop src={loop?.media} className='w-full max-h-full'
-        onClick={handleClick} onTimeUpdate={HandleTimeUpdate} onDoubleClick={handleLikeOnDoubleClick}></video>
+      <video
+        ref={videoRef}
+        muted={isMuted}
+        loop
+        playsInline
+        preload="metadata"
+        src={loop.media}
+        onClick={handleClick}
+        onTimeUpdate={HandleTimeUpdate}
+        onDoubleClick={handleLikeOnDoubleClick}
+        onLoadStart={() => setIsLoading(true)}      // fetch start
+        onLoadedData={() => setIsLoading(false)}    // data loaded
+        onCanPlay={() => setIsLoading(false)}       // ready to play
+        onWaiting={() => setIsLoading(true)}        // buffering
+        onPlaying={() => setIsLoading(false)}       // buffer end
+        onStalled={() => setIsLoading(true)}
+      />
+
+      {isLoading && (
+        <div className="absolute inset-0 z-[200] flex items-center justify-center bg-black/40">
+          <div className="w-10 h-10 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      )}
+
 
       <div className='absolute top-[20px] z-[100] right-[20px]' onClick={() => setIsMuted(prev => !prev)}>
         {!isMuted ? <FiVolume2 className='w-[20px] h-[20px] cursor-pointer  text-white font-semibold' /> :
@@ -337,12 +549,18 @@ function LoopCard({ loop, profileTailwind }) {
               <img src={loop?.author?.profileImage || dp} alt="" className='w-full h-full object-cover shrink-0' />
             </div>
 
-            <div
-              className='font-semibold truncate text-white cursor-pointer max-w-[120px] md:max-w-[150px]'
-              onClick={() => navigate(`/profile/${loop.author?.userName}`)}
-            >
-              {loop.author?.userName}
+
+
+            <div className="flex flex-col">
+              <span className="font-semibold truncate text-white cursor-pointer max-w-[120px] md:max-w-[150px]"
+                onClick={() => navigate(`/profile/${loop.author?.userName}`)}>
+                {loop.author?.userName}
+              </span>
+              <span className="text-xs text-gray-400">
+                {formatTimeAgo(loop.createdAt)}
+              </span>
             </div>
+
 
             {userData._id !== loop.author._id && (
               <FollowButton
@@ -350,6 +568,7 @@ function LoopCard({ loop, profileTailwind }) {
                 targetUserId={loop.author._id}
               />
             )}
+
           </div>
 
 
@@ -367,8 +586,9 @@ function LoopCard({ loop, profileTailwind }) {
                 </span>
               </>
             ) : (
-              loop.caption
+              renderCaption(loop.caption)
             )}
+
 
           </div>
 
@@ -386,7 +606,7 @@ function LoopCard({ loop, profileTailwind }) {
             showShareModal && (
               <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
                 <div className="bg-white w-[300px] rounded-2xl p-4">
-                  <h2 className="text-lg font-bold mb-3">Share Loop To</h2>
+                  <h2 className="text-lg font-bold text-black mb-3">Share Loop To</h2>
 
                   {/* If no following users */}
                   {followingUsers.length === 0 && (

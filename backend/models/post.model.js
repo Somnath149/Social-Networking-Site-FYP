@@ -23,20 +23,29 @@ const postSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
     }],
-    comments: [{
+     comments: [{
         author: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "User",
+            required: true,
         },
-        message:{
-            type:String
+        message: {
+            type: String,
+            required: true,
+        },
+        createdAt: {
+            type: Date,
+            default: Date.now,
         }
     }],
     shares: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
     }],
-      hashtags: hashtagsSchema
+      hashtags: hashtagsSchema,
+
+      viralScore: { type: Number, default: 0 }
+
 }, { timestamps: true })
 
 const Post = mongoose.model("Post", postSchema)

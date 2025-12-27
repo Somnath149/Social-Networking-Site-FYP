@@ -55,7 +55,9 @@ const threadSchema = new mongoose.Schema({
         }
     ],
 
-    hashtags: hashtagsSchema
+    hashtags: hashtagsSchema,
+
+    engagementScore: { type: Number, default: 0 }
 
 }, { timestamps: true });
 

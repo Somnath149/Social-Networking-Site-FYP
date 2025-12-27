@@ -1,5 +1,10 @@
 import React, { useEffect, useState } from "react";
 import ThreadHome from "./ThreadHome";
+import Home from "./Home";
+import LeftSide from "../component/LeftSide";
+import Feed from "../component/Feed";
+import RightSide from "../component/RightSide";
+
 
 const defaultThemes = [
   { name: "Default", class: "theme-default", colors: ["#ffffff", "#000000"] },
@@ -261,7 +266,11 @@ export default function ThemeChanger() {
           bg-[var(--bg)] text-[var(--text)] border border-[var(--primary)] overflow-y-auto"
       >
         <h1 className="text-2xl font-bold">Welcome to Themed Section</h1>
-        <ThreadHome />
+        <div className='w-full flex justify-center items-center'>
+      <LeftSide/>
+      <Feed/>
+      <RightSide m={true}/>
+    </div>
       </section>
     </div>
   );

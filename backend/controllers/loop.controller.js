@@ -241,3 +241,29 @@ export const getLoopFeed = async (req, res) => {
     return res.status(500).json({ message: `Loop Feed Error: ${error.message}` });
   }
 };
+
+
+export const addView = async (req, res) => {
+  try {
+    const { loopId } = req.params;
+
+    const loop = await Loop.findByIdAndUpdate(
+      loopId,
+      { $inc: { views: 1 } },
+      { new: true }
+    )
+      .populate("author", "name userName profileImage")
+      .populate("comments.author", "name userName profileImage");
+
+    if (!loop) {
+      return res.status(404).json({ message: "Loop not found" });
+    }
+
+    // 🔥 REALTIME VIEW UPDATE
+    io.emit("loopViewed", loop);
+
+    return res.status(200).json(loop);
+  } catch (error) {
+    return res.status(500).json({ message: `addView error ${error.message}` });
+  }
+};

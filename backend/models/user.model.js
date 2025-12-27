@@ -72,6 +72,21 @@ const userSchema = new mongoose.Schema({
 ]
 ,
 
+// 👇 add these fields near the bottom
+weeklyKing: {
+    type: Boolean,
+    default: false
+},
+
+weeklyKingScore: {
+    type: Number,
+    default: 0
+},
+
+lastKingAt: {
+    type: Date
+}
+,
     resetOtp: {
         type: String
     },

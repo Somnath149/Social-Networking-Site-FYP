@@ -6,6 +6,8 @@ import dp1 from "../assets/dp1.jpeg"
 import { serverUrl } from '../App'
 import { setProfileData, setUserData } from '../redux/userSlice'
 import axios from 'axios'
+import Cropper from "react-easy-crop";
+import { getCroppedImg } from '../../public/getCroppedImg'
 
 function EditProfile() {
     const [loading, setLoading] = useState(false)
@@ -19,12 +21,33 @@ function EditProfile() {
     const [userName, setuserName] = useState(userData.userName || "")
     const [bio, setBio] = useState(userData.bio || "")
     const [profession, setProfession] = useState(userData.profession || "")
+    const [showCropper, setShowCropper] = useState(false);
+    const [crop, setCrop] = useState({ x: 0, y: 0 });
+    const [zoom, setZoom] = useState(1);
+    const [croppedPixels, setCroppedPixels] = useState(null);
+    const [tempImage, setTempImage] = useState(null);
 
     const handleImage = (e) => {
-        const file = e.target.files[0]
-        setbackendImage(file)
-        setfrontendImage(URL.createObjectURL(file))
-    }
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const imageURL = URL.createObjectURL(file);
+        setTempImage(imageURL);
+        setShowCropper(true); // 🔥 open cropper
+    };
+
+    const onCropComplete = (_, croppedAreaPixels) => {
+        setCroppedPixels(croppedAreaPixels);
+    };
+
+    const saveCroppedImage = async () => {
+        const croppedBlob = await getCroppedImg(tempImage, croppedPixels);
+
+        setbackendImage(croppedBlob); // 🔥 server
+        setfrontendImage(URL.createObjectURL(croppedBlob)); // 🔥 preview
+        setShowCropper(false);
+    };
+
 
     const handleEditProfile = async () => {
         setLoading(true)
@@ -103,6 +126,41 @@ function EditProfile() {
                 </button>
 
             </div>
+            {showCropper && (
+                <div className="fixed inset-0 bg-black z-50 flex flex-col">
+                    <div className="flex-1 relative">
+                        <Cropper
+                            image={tempImage}
+                            crop={crop}
+                            zoom={zoom}
+                            aspect={1}
+                            cropShape="round"     // 🔥 CIRCULAR
+                            showGrid={false}
+                            onCropChange={setCrop}
+                            onZoomChange={setZoom}
+                            onCropComplete={onCropComplete}
+                        />
+                    </div>
+
+                    <input
+                        type="range"
+                        min={1}
+                        max={3}
+                        step={0.1}
+                        value={zoom}
+                        onChange={(e) => setZoom(e.target.value)}
+                        className="mx-5 my-3"
+                    />
+
+                    <button
+                        onClick={saveCroppedImage}
+                        className="m-4 py-3 rounded-xl bg-white font-semibold"
+                    >
+                        Done
+                    </button>
+                </div>
+            )}
+
         </div>
     )
 }

@@ -7,9 +7,12 @@ import { serverUrl } from "../App";
 export const useTrendingPost = (selectedTag) => {
     const dispatch = useDispatch();
     const { postData } = useSelector(state => state.post);
-
+ const {userData}= useSelector(state=>state.user)
     useEffect(() => {
+  if (!userData?._id) return; 
+
         const fetchTrending = async () => {
+
             try {
                 const today = await axios.get(
                     `${serverUrl}/api/post/trending/today`,
@@ -33,6 +36,8 @@ export const useTrendingPost = (selectedTag) => {
 
 
     useEffect(() => {
+        if (!userData?._id) return; 
+
         if (!selectedTag) return;
 
         const fetchTagPosts = async () => {

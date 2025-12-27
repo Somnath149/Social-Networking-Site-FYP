@@ -3,6 +3,8 @@ import { useSelector } from "react-redux";
 import Post from "../component/Post";
 import { MdOutlineKeyboardBackspace } from "react-icons/md";
 import { useNavigate } from "react-router-dom";
+import { FaTimes } from "react-icons/fa";
+import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
 
 function PostList({
     disableProfileClick,
@@ -104,15 +106,15 @@ const navigate = useNavigate()
                         onClick={() => setActiveIndex(null)}
                         className="absolute top-5 right-5 cursor-dot1 text-[var(--text)] text-3xl"
                     >
-                        ✕
+                        <FaTimes/>
                     </button>
 
                     {activeIndex > 0 && (
                         <button
                             onClick={() => setActiveIndex((prev) => prev - 1)}
-                            className="absolute left-5 cursor-dot1 text-[var(--text)] text-3xl"
+                            className="absolute left-5 cursor-dot1 text-[var(--text)] bg-[var(--secondary)] rounded-full"
                         >
-                            ‹
+                            <FiChevronLeft size={34} />
                         </button>
                     )}
 
@@ -135,9 +137,9 @@ const navigate = useNavigate()
                     {activeIndex < randomPosts.length - 1 && (
                         <button
                             onClick={() => setActiveIndex((prev) => prev + 1)}
-                            className="absolute right-5 cursor-dot1 text-[var(--text)] text-3xl"
+                            className="absolute right-5 cursor-dot1 text-[var(--text)] bg-[var(--secondary)] rounded-full"
                         >
-                            ›
+                           <FiChevronRight size={34} />
                         </button>
                     )}
                 </div>

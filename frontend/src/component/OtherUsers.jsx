@@ -9,35 +9,61 @@ function OtherUsers({ user, t,showbio }) {
     const navigate = useNavigate()
     const { userData } = useSelector(state => state.user)
 
-    return (
-        <div className='w-full h-[80px] flex items-center justify-between border-b-2 border-[var(--primary)] cursor-dot1'>
-            <div className='flex items-center gap-[10px]'>
-                <div className='w-[40px] h-[40px] border-2 border-[var(--primary)] rounded-full cursor-pointer overflow-hidden'
-                    onClick={() => { navigate(`/profile/${user.userName}`) }}>
-                    <img src={user.profileImage || dp1} alt="" className='w-full object-cover' />
-                </div>
-                <div>
-                    <div className='text-[14px] text-[var(--text)] text-[var(--text)]  font-semibold'>
-                        {user.name}
-                    </div>
-                    <div className='text-[12px] text-gray-400 font-semibold'>
-                        {user.userName || userData.userName}
-                    </div>
-                    {showbio && <div className='text-[12px] text-gray-400 font-semibold'>
-                        {user.bio}
-                    </div>}
+   return (
+  <div className="w-full flex items-center justify-between gap-3 px-3 py-3
+                  border-b border-[var(--primary)] cursor-dot1">
 
-                </div>
-            </div>
-            <FollowButton 
-            tailwind={`px-[10px] w-[100px] cursor-pointer py-[5px] h-[40px] rounded-2xl
-                 transition-colors duration-300 ${t ? "bg-white hover:bg-black" 
-                    : "bg-white hover:bg-black"}  text-black hover:text-white
-                  transition-all`}
-             targetUserId={user._id} />
+    <div className="flex items-center gap-3 min-w-0">
+   
+      <div
+        className="w-10 h-10 md:w-12 md:h-12 flex-shrink-0
+                   border border-[var(--primary)]
+                   rounded-full overflow-hidden cursor-pointer"
+        onClick={() => navigate(`/profile/${user.userName}`)}
+      >
+        <img
+          src={user.profileImage || dp1}
+          alt=""
+          className="w-full h-full object-cover"
+        />
+      </div>
 
-        </div>
-    )
+      <div className="flex flex-col min-w-0">
+        <span className="text-sm md:text-base font-semibold
+                         text-[var(--text)] truncate">
+          {user.name}
+        </span>
+
+        <span className="text-xs md:text-sm
+                         text-gray-400 truncate">
+          @{user.userName || userData.userName}
+        </span>
+
+        {showbio && (
+          <span className="text-xs text-gray-500 line-clamp-1">
+            {user.bio}
+          </span>
+        )}
+      </div>
+    </div>
+
+    <FollowButton
+      tailwind="
+        min-w-[90px] md:min-w-[110px]
+        h-9 md:h-10 px-4
+        text-sm font-medium
+        rounded-full
+        border border-black
+        bg-white text-black
+        hover:bg-black hover:text-white
+        transition-all duration-300
+        flex-shrink-0
+      "
+      targetUserId={user._id}
+    />
+  </div>
+);
+
 
 }
 

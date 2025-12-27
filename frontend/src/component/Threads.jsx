@@ -183,12 +183,19 @@ function Threads({ mythreads, mythreadTailwind, HashTailwind, externalThreads })
                     }
 
                     {!mythreadTailwind && !HashTailwind && <UploadThread />}
-
-                  
+{
+    mythreadTailwind && <h1 className="text-black text-xl font-bold mb-4">
+                        {mythreads === userData._id ? "Your Threads" : "Threads"}
+                    </h1>
+}
+                    
 
                     <div className="mt-4 w-full flex flex-col items-center gap-4">
+
                         {filteredThreads.length === 0 ? (
-                            <p className="text-center text-[var(--text)] mt-10 mb-20">No threads yet...</p>
+                            <p className="text-gray-400 text-center mt-10 mb-20">
+                                {mythreads === userData._id ? "You haven't post thread yet..." : "haven't post any thread yet..."}
+                            </p>
                         ) : (
                             filteredThreads.map((thread) => (
                                 <div
@@ -366,11 +373,13 @@ function Threads({ mythreads, mythreadTailwind, HashTailwind, externalThreads })
 
                                     </div>
                                 </div>
-                            )))}
+                            )))
+
+                        }
 
                         {/* Nab Bar */}
 
-                      <div className='
+                        <div className='
             w-[90%] lg:hidden h-[80px] flex justify-around items-center
             fixed bottom-[7px] rounded-full z-[100]
             backdrop-blur-xl bg-gradient-to-r from-gray-900/80 via-black/50 to-gray-900/80

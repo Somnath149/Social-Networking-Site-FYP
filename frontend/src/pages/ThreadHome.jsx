@@ -11,6 +11,7 @@ import { useState } from "react";
 import Messages from "./Messages";
 import Notifications from "./Notifications";
 import TrendingPostLoop from "../component/TrendingPostLoop";
+import Kings from "../component/Kings";
 
 function ThreadHome() {
   const { threads } = useSelector((state) => state.thread);
@@ -26,6 +27,7 @@ function ThreadHome() {
       {centerView === "trends" && <TrendingPostLoop show={true}/>}
       {centerView === "users" && <ForYou />}
       {centerView === "messages" && <Messages mwidth={true} />}
+      {centerView === "king" && <Kings threadTailwind={true} />}
       {centerView === "notifications" && <Notifications threadTailwind={true}/>}
       <RightSideThread  setCenterView={setCenterView} setShowOtherUsers={setShowOtherUsers} setShowTrends={setShowTrends}
       showOtherUsers={showOtherUsers} showTrends={showTrends}

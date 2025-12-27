@@ -13,6 +13,7 @@ const loopSlice = createSlice({
         
         setLoopData: (state, action) => {
             state.loopData = action.payload;
+            console.log("Inside reducer - loop data:", action.payload);
         },
 
         setFeedInitial: (state, action) => {

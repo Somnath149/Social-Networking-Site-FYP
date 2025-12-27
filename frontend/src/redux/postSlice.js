@@ -11,7 +11,7 @@ const postSlice = createSlice({
     reducers: {
         setPostData: (state, action) => {
             state.postData = action.payload
-            //console.log("Inside reducer - post data:", action.payload);
+            console.log("Inside reducer - post data:", action.payload);
         },
         setTodayTrending: (state, action) => {
             state.todayTrending = action.payload;

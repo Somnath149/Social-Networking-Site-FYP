@@ -8,6 +8,7 @@ import useLoopFeed from "../hooks/useLoopFeed";
 function Loops() {
     const navigate = useNavigate();
     const location = useLocation();
+const hasScrolledRef = useRef(false);
 
     const query = new URLSearchParams(location.search);
     const userId = query.get("user");
@@ -21,6 +22,7 @@ function Loops() {
     // user feed
     const userFeed = userId
         ? loopData.filter(l => l.author?._id === userId)
+         .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
         : [];
 
     // global feed
@@ -48,13 +50,16 @@ function Loops() {
     }, [userId]);
 
     useEffect(() => {
-        if (!startLoopId) return;
+  if (!startLoopId) return;
+  if (hasScrolledRef.current) return;
 
-        setTimeout(() => {
-            const el = document.getElementById(startLoopId);
-            if (el) el.scrollIntoView({ behavior: "instant" });
-        }, 150);
-    }, [startLoopId, activeFeed]);
+  const el = document.getElementById(startLoopId);
+  if (el) {
+    el.scrollIntoView({ behavior: "instant" });
+    hasScrolledRef.current = true;
+  }
+}, [startLoopId]);
+
 
     return (
         <div className="w-screen h-screen bg-black overflow-hidden flex justify-center items-center">

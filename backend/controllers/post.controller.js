@@ -8,33 +8,50 @@ import { getSocketId, io } from "../routes/socket.js";
 import Thread from "../models/thread.model.js";
 
 export const uploadPost = async (req, res) => {
-    try {
-        const { caption, mediaType } = req.body;
-        let hashtags = []
-        if (caption) {
-            hashtags = caption.match(/#\w+/g) || [];
-            hashtags = hashtags.map(tag => tag.toLowerCase());
-        }
+  try {
+    console.log("BODY:", req.body);
+  console.log("FILE:", req.file);
 
-        let media;
-        if (req.file) {
-            media = (await uploadOnCloudinary(req.file.path)).secure_url
+    const { caption, mediaType } = req.body;
 
-        } else {
-            return res.status(400).json({ message: "media is  required" })
-        }
-        const post = await Post.create({
-            caption, media, mediaType, author: req.userId, hashtags
-        })
-        const user = await User.findById(req.userId)
-        user.posts.push(post._id)
-        await user.save()
-        const populatedPost = await Post.findById(post._id).populate("author", "name userName profileImage")
-        return res.status(201).json(populatedPost)
-    } catch (error) {
-        return res.status(500).json({ message: `uploadPost error ${error}` })
+    let hashtags = [];
+    if (caption) {
+      hashtags = caption.match(/#\w+/g) || [];
+      hashtags = hashtags.map(tag => tag.toLowerCase());
     }
-}
+
+    if (!req.file) {
+      return res.status(400).json({ message: "media is required" });
+    }
+
+    // 🔥 UPLOAD ONLY ONCE
+    const cloudinaryRes = await uploadOnCloudinary(req.file.path);
+    if (!cloudinaryRes) {
+      return res.status(500).json({ message: "Cloudinary upload failed" });
+    }
+
+    const post = await Post.create({
+      caption,
+      media: cloudinaryRes.secure_url,
+      mediaType,
+      author: req.userId,
+      hashtags,
+    });
+
+    const user = await User.findById(req.userId);
+    user.posts.push(post._id);
+    await user.save();
+
+    const populatedPost = await Post.findById(post._id)
+      .populate("author", "name userName profileImage");
+
+    return res.status(201).json(populatedPost);
+  } catch (error) {
+    console.error("uploadPost error:", error);
+    return res.status(500).json({ message: "uploadPost error" });
+  }
+};
+
 
 export const getAllPosts = async (req, res) => {
     try {
@@ -240,7 +257,7 @@ export const getTodayTrending = async (req, res) => {
             { $match: { createdAt: { $gte: since }, hashtags: { $exists: true, $ne: [] } } },
             { $unwind: "$hashtags" },
             { $group: { _id: "$hashtags", count: { $sum: 1 } } }
-            
+
         ]);
 
         const combined = [...postTrends, ...loopTrends, ...threadTrends].reduce((acc, trend) => {

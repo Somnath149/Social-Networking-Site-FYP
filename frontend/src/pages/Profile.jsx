@@ -42,6 +42,8 @@ function Profile() {
   const [showQuote, setShowQuote] = useState(false)
   const [showPost, setShowPost] = useState(true)
   const [replies, setReplies] = useState(false)
+  const { weeklyKing } = useSelector(state => state.user);
+const [showWeeklyCard, setShowWeeklyCard] = useState(true);
 
   const handleProfile = async () => {
     try {
@@ -80,7 +82,7 @@ function Profile() {
 
   const handleLogOut = async () => {
     const ok = confirm("Do you want to logout?");
-  if (!ok) return; 
+    if (!ok) return;
     try {
       const result = await axios.get(`${serverUrl}/api/auth/signout`, { withCredentials: true })
       dispatch(setUserData(null))
@@ -96,13 +98,13 @@ function Profile() {
       <div className={`w-full h-screen bg-[var(--bg)] ${showFollowers || showFollowing ? "blur-sm" : "overflow-y-auto"}`}>
         <div className='w-full h-[80px] flex justify-between items-center px-[30px] text-[var(--text)]'>
           <div className='text-[var(--text)] w-[25px] h-[25px] cursor-pointer'
-           onClick={() => navigate("/")}><MdOutlineKeyboardBackspace
-            className='text-[var(--text)] cursor-pointer w-[25px] h-[25px]' /></div>
+            onClick={() => navigate("/")}><MdOutlineKeyboardBackspace
+              className='text-[var(--text)] cursor-pointer w-[25px] h-[25px]' /></div>
           <div className='font-semibold text-[20px]'>{profileData?.userName}</div>
 
           <div className='flex items-center gap-2'>
             <Settings size={24} className="text-[var(--text)] drop-shadow  hover:rotate-180 duration-700"
-              onClick={() => navigate("/theme")}
+              onClick={() => navigate("/setting")}
             />
             <div className='font-semibold cursor-pointer text-[20px]' onClick={() => handleLogOut()}>Log out</div>
           </div>
@@ -110,9 +112,110 @@ function Profile() {
         </div>
 
         <div className='w-full h-[150px] flex items-start gap-[20px] lg:gap-[50px] pt-[20px] px-[10px]  justify-center'>
-          <div className='w-[80px] h-[80px] md:w-[140px] md:h-[140px] border-2 border-black rounded-full cursor-pointer overflow-hidden'>
-            <img src={profileData?.profileImage || dp1} alt="" className='w-full object-cover' />
-          </div>
+
+{/* 🏆 Weekly Score Card */}
+
+{showWeeklyCard && userData?._id === profileData?._id && profileData.weeklyKingScore > 0 && (
+   <div
+    className={`fixed inset-0 flex items-center justify-center z-111 
+      bg-black/50 backdrop-blur-sm transition-opacity duration-500
+      ${showWeeklyCard ? 'opacity-100' : 'opacity-0'}`}
+  >
+    <div
+      className={`bg-gradient-to-br from-yellow-400 via-orange-500 to-yellow-600
+        p-6 rounded-2xl shadow-2xl border-2 border-yellow-300 w-[300px] md:w-[400px]
+        transform transition-all duration-500
+        ${showWeeklyCard ? 'scale-100' : 'scale-90 opacity-0'}`}
+    >
+      <div className="flex flex-col items-center gap-2">
+        <span className="text-5xl drop-shadow-lg animate-bounce">👑</span>
+        <h2 className="text-xl md:text-2xl font-bold text-black">{profileData.name}</h2>
+        <p className="text-sm md:text-base text-black/80">Weekly Score</p>
+        <div className="text-3xl md:text-4xl font-extrabold text-black">{profileData.weeklyKingScore || 0} pts</div>
+        <div className="mt-3">
+          <button
+            className="px-4 py-2 rounded-full bg-black text-white hover:bg-gray-800 transition"
+            onClick={() => setShowWeeklyCard(false)}
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+)}
+
+      
+          {weeklyKing?._id === profileData?._id ? (
+
+            <div className="relative w-[140px] h-[140px] flex items-center justify-center">
+
+              <div className="
+    absolute inset-0 rounded-full
+    bg-gradient-to-br from-yellow-400 via-orange-500 to-yellow-600
+    blur-[6px] opacity-70
+  " />
+
+              <div className="
+    absolute inset-[6px] rounded-full
+    bg-gradient-to-br from-[#3a2a00] via-[#1a1400] to-[#000]
+    shadow-[0_0_40px_rgba(255,200,0,0.8)]
+  " />
+
+              <div className="relative w-[120px] h-[120px]">
+
+                <div className="
+    absolute inset-0 rounded-full
+    bg-gradient-to-tr from-yellow-300 via-orange-500 to-yellow-300
+    animate-spin-slow
+  " />
+
+                <div className="absolute inset-[5px] rounded-full bg-black" />
+
+                <div className="absolute inset-[8px] rounded-full overflow-hidden">
+                  <img
+                    src={profileData?.profileImage || dp1}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+
+                <div className="
+  absolute -bottom-1 -right-1
+  z-50
+  bg-gradient-to-r from-yellow-400 to-orange-500
+  text-black text-[11px] font-extrabold
+  px-2 py-[2px]
+  rounded-full
+  shadow-[0_4px_12px_rgba(255,180,0,0.9)]
+  border border-yellow-300
+">
+                  👑 KING
+                </div>
+
+              </div>
+
+
+              <span className="
+    absolute -top-8 text-5xl
+    drop-shadow-[0_10px_20px_rgba(255,215,0,0.8)]
+    animate-float-crown
+  ">
+                👑
+              </span>
+
+            </div>
+
+          ) : (
+
+            /* 🙂 NORMAL USER DP */
+            <div className="w-[120px] h-[120px] rounded-full overflow-hidden border border-gray-600">
+              <img
+                src={profileData?.profileImage || dp1}
+                className="w-full h-full object-cover"
+              />
+            </div>
+          )}
+
           <div>
             <div className='font-semibold text-[22px] text-[var(--text)]'>{profileData?.name}</div>
             <div className='text-[17px] text-[var(--text)]'>{profileData?.profession || "new User"}</div>
@@ -135,11 +238,11 @@ function Profile() {
               <div className='flex relative w-[35px] h-10'>
                 {
                   profileData?.following?.slice(0, 3).map((user, index) => (
-                     <div
-                    key={user._id}
-                    className={`w-10 h-10 rounded-full border-2 border-black overflow-hidden cursor-pointer absolute`}
-                    style={{ left: `${index * 12}px` }} // spacing adjustable
-                  >
+                    <div
+                      key={user._id}
+                      className={`w-10 h-10 rounded-full border-2 border-black overflow-hidden cursor-pointer absolute`}
+                      style={{ left: `${index * 12}px` }} // spacing adjustable
+                    >
                       <img src={user.profileImage || dp1} alt="" className='w-full object-cover' />
                     </div>
                   ))
@@ -280,22 +383,37 @@ function Profile() {
                     <div className="w-full grid grid-cols-3 gap-[2px] sm:gap-[4px]">
                       {loopData
                         .filter(loop => loop.author?._id === profileData?._id)
-                        .map((loop, index) => (
+                        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+                        .map((loop) => (
                           <div
-                            key={index}
-                            className="relative w-full aspect-square bg-black cursor-pointer overflow-hidden"
-                            onClick={() => navigate(`/loops?user=${profileData._id}&start=${loop._id}`)}
+                            key={loop._id}
+                            className="group relative w-full aspect-square bg-black cursor-pointer overflow-hidden"
+                            onClick={() =>
+                              navigate(`/loops?user=${profileData._id}&start=${loop._id}`)
+                            }
                           >
                             <video
                               src={loop.media}
                               muted
-                              className="w-full h-full object-cover hover:scale-110 transition-all duration-300"
+                              className="w-full h-full object-cover group-hover:scale-110 transition-all duration-300"
                             />
 
+                            {/* Hover Overlay */}
+                            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-6 text-white text-sm sm:text-base font-semibold">
+                              <div className="flex items-center gap-1">
+                                ❤️ {loop.likes?.length || 0}
+                              </div>
+                              <div className="flex items-center gap-1">
+                                💬 {loop.comments?.length || 0}
+                              </div>
+                            </div>
+
+                            {/* Video Icon */}
                             <div className="absolute top-2 right-2 bg-black/40 px-2 py-1 rounded-md text-white text-xs">
-                              🎥
+                              🎥<span className='font-semibold'>{loop?.views || 0}</span>
                             </div>
                           </div>
+
                         ))}
                     </div>
                   </div>

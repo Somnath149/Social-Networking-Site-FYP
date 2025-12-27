@@ -102,9 +102,9 @@ function UploadThread() {
     };
 
     return (
-        <div className="border-b w-full bg-[var(--secondary)] border-gray-800 p-4 text-[var(--text)] text-[var(--text1)] ">
+        <div className="border-b w-full bg-[var(--primary)]/90 border-gray-800 p-4 text-[var(--text)] text-[var(--text1)] ">
             <textarea
-                className="w-full bg-transparent outline-none text-lg resize-none"
+                className="w-full bg-transparent outline-none text-lg resize-none placeholder:text-[var(--text)]"
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 placeholder="What's happening?"

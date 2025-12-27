@@ -9,7 +9,9 @@ const userSlice = createSlice({
         following: [],
         toggleFollow:[],
         searchData:null,
-        notificationData:[]
+        notificationData:[],
+        weeklyKing: null,
+        allUsers:[]
     },
     reducers: {
         setUserData: (state, action) => {
@@ -28,12 +30,19 @@ const userSlice = createSlice({
             state.following = action.payload
           //  console.log("Inside reducer - Following data:", action.payload);
         },
-        toggleFollow:(state, action)=>{
-            const targetUserId = action.payload
-            if(state.following.includes(targetUserId)){
-                state.following = state.following.filter(id => id != targetUserId)
-            }else{
-                state.following.push(targetUserId)
+        toggleFollow: (state, action) => {
+            const targetUserId = action.payload;
+
+            if (!state.userData) return;
+
+            const index = state.userData.following.indexOf(targetUserId);
+
+            if (index !== -1) {
+                // UNFOLLOW
+                state.userData.following.splice(index, 1);
+            } else {
+                // FOLLOW
+                state.userData.following.push(targetUserId);
             }
         },
         setSearchData: (state, action) => {
@@ -44,8 +53,16 @@ const userSlice = createSlice({
             state.notificationData = action.payload
            // console.log("Inside reducer - notification Data:", action.payload);
         },
+        setWeeklyKing: (state, action) => {
+            state.weeklyKing = action.payload;
+            console.log("Inside reducer - notification Data:", action.payload);
+        },
+        setAllUsers: (state, action) => {
+            state.allUsers = action.payload;
+            console.log("Inside reducer - all user Data:", action.payload);
+        },
     }
 })
 
-export const { setUserData, setNotificationData, setSuggestedUser, setProfileData, setFollowing, toggleFollow, setSearchData } = userSlice.actions
+export const { setUserData, setWeeklyKing, setAllUsers, setNotificationData, setSuggestedUser, setProfileData, setFollowing, toggleFollow, setSearchData } = userSlice.actions
 export default userSlice.reducer

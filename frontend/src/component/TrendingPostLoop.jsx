@@ -62,9 +62,9 @@ function TrendingPostLoop({ tp, show }) {
             }
         >
 
-            {tp ? (<div className='w-full h-full mt-20'>
-                <div className='w-[25%] h-[80px] fixed hidden sm:hidden md:flex top-0 right-0 flex
-                     items-center justify-between px-4 bg-[var(--bg)] z-50'>
+            {tp ? (<div className='w-full h-full  relative'>
+                <div className='w-[25%] h-[80px] absolute hidden sm:hidden md:flex top-0  flex
+                     items-center justify-between px-4 bg-[var(--bg)] gap-5 z-50'>
 
                     <MdOutlineKeyboardBackspace onClick={() => navigate(`/`)}
                         className='text-[var(--text)] cursor-pointer lg:hidden w-[30px] h-[30px]' />
@@ -73,7 +73,7 @@ function TrendingPostLoop({ tp, show }) {
 
                     <div
                         onClick={() => navigate(`/threads`)}
-                        className="text-[30px] mr-0 font-bold text-gray-400 flex gap-1 select-none"
+                        className="text-[25px] mr-0 font-bold text-gray-400 flex gap-0.5 select-none"
                     >
                         {["T", "H", "R", "E", "A", "D"].map((l, i) => (
                             <span
@@ -89,11 +89,8 @@ function TrendingPostLoop({ tp, show }) {
                     </div>
                 </div>
 
-                <div className='flex flex-col gap-5'>
+                <div className='pt-20 flex flex-col gap-5'>
                     <div className="w-75 max-h-[50vh] overflow-y-auto pr-2">
-                        {filteredToday?.length === 0 && (
-                            <p className="text-[var(--text)]">No trending hashtags today.</p>
-                        )}
 
                         {filteredToday && (
                             <div className="bg-[var(--primary)] rounded-2xl p-4">
@@ -101,9 +98,14 @@ function TrendingPostLoop({ tp, show }) {
                                     Today's Trending
                                 </h2>
 
+                                {filteredToday?.length === 0 && (
+                                    <p className="text-[var(--text)]">No trending hashtags</p>
+                                )}
+
                                 {filteredToday?.map((t, i) => (
                                     <div key={i} className="mb-3 cursor-pointer mt-[18px]">
-                                        <p className="text-blue-600  font-semibold"
+
+                                        <p className="text-[var(--text)]  font-semibold"
                                             onClick={() => navigate(`/plhashtag/${(t.tag || t._id).replace("#", "")}`)}>{t.tag || t._id}</p>
                                         <span className="text-sm text-gray-500">
                                             {t.count} posts
@@ -126,9 +128,7 @@ function TrendingPostLoop({ tp, show }) {
                     <div className="w-75 max-h-[50vh] pr-2">
 
 
-                        {filteredAll?.length === 0 && (
-                            <p className="text-[var(--text)]">No trending hashtags today.</p>
-                        )}
+
 
                         {filteredAll && (
                             <div className="bg-[var(--primary)] rounded-2xl p-4">
@@ -136,9 +136,12 @@ function TrendingPostLoop({ tp, show }) {
                                     All Time Trending
                                 </h2>
 
+                        {filteredAll?.length === 0 && (
+                            <p className="text-[var(--text)]">No trending hashtags</p>
+                        )}
                                 {filteredAll?.map((t, i) => (
                                     <div key={i} className="mb-3 cursor-pointer mt-[18px]">
-                                        <p className="text-blue-600  font-semibold"
+                                        <p className="text-[var(--text)]  font-semibold"
                                             onClick={() => navigate(`/plhashtag/${(t.tag || t._id).replace("#", "")}`)}>{t.tag || t._id}</p>
                                         <span className="text-sm text-gray-500">
                                             {t.count} posts
@@ -233,17 +236,17 @@ function TrendingPostLoop({ tp, show }) {
                                     className="mb-4 cursor-pointer mt-5"
                                     onClick={() => navigate(`/plhashtag/${(t.tag || t._id).replace("#", "")}`)}
                                 >
-                                    <p className="text-blue-500 font-semibold text-base sm:text-lg">{t.tag || t._id}</p>
+                                    <p className="text-[var(--text)] font-semibold text-base sm:text-lg">{t.tag || t._id}</p>
                                     <span className="text-sm text-[var(--text)]">{t.count} posts</span>
                                     <hr className="border-gray-700 my-3" />
                                 </div>
                             ))}
 
-{allLimit < filteredAll.length && (
-  <button onClick={() => setAllLimit(allLimit + 10)} className="text-blue-500 font-bold">
-    Show more
-  </button>
-)}
+                            {allLimit < filteredAll.length && (
+                                <button onClick={() => setAllLimit(allLimit + 10)} className="text-[var(--text)] font-bold">
+                                    Show more
+                                </button>
+                            )}
                         </div>
                     </>
                 )

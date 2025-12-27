@@ -348,3 +348,49 @@
   background:  var(--secondary);   /* selection background */
   color:  var(--text);           /* selected text color */
 }
+
+
+
+@keyframes throne {
+  0% { transform: scale(0.9) translateY(40px); opacity: 0; }
+  100% { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+.animate-throne {
+  animation: throne 0.6s ease-out;
+}
+
+@keyframes crownGlow {
+  0%,100% { text-shadow: 0 0 15px gold; }
+  50% { text-shadow: 0 0 35px gold; }
+}
+
+.animate-crown-glow {
+  animation: crownGlow 1.5s infinite;
+}
+
+
+@keyframes floatCrown {
+  0%,100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+.animate-float-crown {
+  animation: floatCrown 2s ease-in-out infinite;
+}
+
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.15s ease-out;
+}

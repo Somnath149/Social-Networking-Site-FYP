@@ -9,6 +9,7 @@ import StoryDp from './StoryDp';
 import { BiMessageAltDetail } from "react-icons/bi";
 import { useNavigate } from 'react-router-dom';
 import PostList from '../pages/PostList';
+import WeeklyKing from './WeeklyKing';
 function Feed({ theme }) {
 
   const { postData } = useSelector(state => state.post)
@@ -18,10 +19,16 @@ function Feed({ theme }) {
   const [showFeed, setShowFeed] = useState(true)
   const [showExplore, setShowExplore] = useState(false)
   const [activeIndex, setActiveIndex] = useState(null);
+  const king = useSelector(state => state.user.weeklyKing);
   const navigate = useNavigate()
 
   return (
-    <div className={`lg:w-[50%] w-full h-full bg-[var(--bg)] h-screen ${!theme ? "overflow-y-scroll" : ""} `} >
+    <div className={`lg:w-[50%] w-full h-full bg-[var(--bg)] h-screen ${!theme ? "overflow-y-scroll" : ""} `}
+    
+    >
+
+<WeeklyKing  king={king}/>
+
       <div className='w-[full] h-[100px] flex items-center justify-between p-[20px] lg:hidden'>
 
         <img src={logo} alt="" className='w-[40px]' />

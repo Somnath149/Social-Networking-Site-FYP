@@ -26,7 +26,7 @@ function RightSideThread({ setCenterView, setShowOtherUsers, setShowTrends, show
 
   return (
     <>
-      <div className="hidden lg:block h-screen w-[35%] bg-[var(--bg)] overflow-hidden border-l border-gray-800">
+      <div className="hidden lg:block h-screen w-[45%] bg-[var(--bg)] overflow-hidden border-l border-gray-800">
 
         <div className="h-full sticky top-0 overflow-y-auto px-4 py-6 space-y-6">
 
@@ -46,9 +46,9 @@ function RightSideThread({ setCenterView, setShowOtherUsers, setShowTrends, show
   .sort((a, b) => b.count - a.count)
   .slice(0, 5).map((t, i) => (
                   <div key={i} className="mb-3 cursor-pointer mt-[18px]">
-                    <p className="text-blue-600  font-semibold"
+                    <p className="text-[var(--text)]  font-semibold"
                       onClick={() => navigate(`/plhashtag/${(t.tag || t._id).replace("#", "")}`)}>{t.tag || t._id}</p>
-                    <span className="text-sm text-gray-500">
+                    <span className="text-sm text-[var(--text)] ">
                       {t.count} posts
                     </span>
                     <hr className="border-gray-700 my-3" />

@@ -11,6 +11,7 @@ import storyRouter from "./routes/story.route.js"
 import messageRouter from "./routes/message.route.js"
 import { app, server } from "./routes/socket.js"
 import threadRouter from "./routes/thread.route.js"
+import "./cron/weeklyKing.js";
 
 dotenv.config()
 let port= process.env.PORT || 5000
@@ -30,13 +31,23 @@ app.use("/api/story", storyRouter)
 app.use("/api/message", messageRouter)
 app.use("/api/thread", threadRouter)
 
-
 app.get('/',(req,res)=>{
     res.send("hello")
 })
 
-server.listen(port,()=>{
-    console.log("server started at:",port)
-    connentDB()
-})
+const startServer = async () => {
+  try {
+    await connentDB();   // ✅ wait for MongoDB first
 
+    server.listen(port, () => {
+      console.log("MongoDB connected");
+      console.log("Server started at:", port);
+    });
+
+  } catch (error) {
+    console.error("Failed to start server:", error);
+    process.exit(1);
+  }
+};
+
+startServer();
