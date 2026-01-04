@@ -33,7 +33,15 @@ function VideoPlayer({ media, active, feed }) {
     return () => observer.disconnect();
   }, []);
 
-
+const handleClick = () => {
+    if (isPlaying) {
+      videoRef.current.pause()
+      setIsPlaying(false)
+    } else {
+      videoRef.current.play()
+      setIsPlaying(true)
+    }
+  }
 
   return (
     <div className='h-[100%] relative cursor-pointer max-w-full rounded-2xl overflow-hidden'>
@@ -48,7 +56,8 @@ function VideoPlayer({ media, active, feed }) {
         src={media}
         playsInline
         muted={!active && isMuted}
-        
+        onClick={handleClick}
+        loop
         onLoadStart={() => setIsLoading(true)}     
         onLoadedData={() => setIsLoading(false)}    
         onCanPlay={() => setIsLoading(false)}       

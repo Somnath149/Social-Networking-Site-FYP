@@ -12,6 +12,7 @@ import Messages from "./Messages";
 import Notifications from "./Notifications";
 import TrendingPostLoop from "../component/TrendingPostLoop";
 import Kings from "../component/Kings";
+import FollowingThreads from "../component/FollowingThreads";
 
 function ThreadHome() {
   const { threads } = useSelector((state) => state.thread);
@@ -26,6 +27,7 @@ function ThreadHome() {
       {centerView === "threads" && <Threads />}
       {centerView === "trends" && <TrendingPostLoop show={true}/>}
       {centerView === "users" && <ForYou />}
+      {centerView === "foryou" && <FollowingThreads />}
       {centerView === "messages" && <Messages mwidth={true} />}
       {centerView === "king" && <Kings threadTailwind={true} />}
       {centerView === "notifications" && <Notifications threadTailwind={true}/>}

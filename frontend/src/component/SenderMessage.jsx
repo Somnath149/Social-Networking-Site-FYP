@@ -38,28 +38,36 @@ function SenderMessage({ message }) {
           />
         )}
 
-        {message?.post && (
-          <div className="bg-black/20 rounded-xl overflow-hidden">
-            {message.post?.media?.endsWith(".mp4") ? (
-              <video
-                src={message.post.media}
-                onClick={() => openViewer(message.post.media, "video")}
-                className="w-full max-w-[300px] max-h-[300px] object-cover rounded-xl cursor-pointer"
-              ></video>
-            ) : (
-              <img
-                src={message.post.media}
-                onClick={() => openViewer(message.post.media, "image")}
-                className="w-full max-w-[300px] max-h-[300px] object-cover rounded-xl cursor-pointer"
-                alt="shared-post"
-              />
-            )}
+       {message?.post && (
+  <div className="w-full max-w-[320px] bg-black/30 rounded-2xl overflow-hidden border border-white/10">
+    
+    <div className="relative w-full aspect-[4/5] bg-black">
+      {message.post.media.endsWith(".mp4") ? (
+        <video
+          src={message.post.media}
+          onClick={() => openViewer(message.post.media, "video")}
+          className="w-full h-full object-cover cursor-pointer"
+        />
+      ) : (
+        <img
+          src={message.post.media}
+          onClick={() => openViewer(message.post.media, "image")}
+          className="w-full h-full object-cover cursor-pointer"
+          alt="shared-post"
+        />
+      )}
+    </div>
 
-            {message.post.caption && (
-              <p className="p-2 text-white text-[14px]">{message.post.caption}</p>
-            )}
-          </div>
-        )}
+    {message.post.caption && (
+      <div className="p-3">
+        <p className="text-white text-sm leading-snug line-clamp-3">
+          {message.post.caption}
+        </p>
+      </div>
+    )}
+  </div>
+)}
+
 
         {message?.loop && (
           <div className="bg-black/20 rounded-xl overflow-hidden">

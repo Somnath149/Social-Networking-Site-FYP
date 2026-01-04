@@ -184,7 +184,7 @@ function TrendingPostLoop({ tp, show }) {
                             </form>
                         </div>
 
-                        <div className="bg-[var(--secondary)] p-4 rounded-2xl mt-4 w-full sm:w-[96%] mx-auto">
+                        <div className="bg-[var(--primary)] p-4 rounded-2xl mt-4 w-full sm:w-[96%] mx-auto">
                             <div className="flex justify-around text-sm sm:text-lg">
                                 <div
                                     className={`font-bold text-[var(--text)] cursor-pointer mb-3

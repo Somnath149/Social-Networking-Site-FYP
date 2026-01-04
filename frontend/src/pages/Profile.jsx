@@ -11,16 +11,11 @@ import dp1 from "../assets/dp1.jpeg"
 import FollowButton from '../component/FollowButton'
 import Post from '../component/Post'
 import { setSelectedUser } from '../redux/messageSlice'
-import Search from './Search'
 import { FiSearch } from 'react-icons/fi'
-import { div } from 'framer-motion/client'
-import ThreadNav from '../component/ThreadNav'
 import Threads from '../component/Threads'
-import { setThreads } from '../redux/threadSlice'
 import Retweets from '../component/Retweets'
 import Comment from '../component/Comment'
 import Quote from '../component/Quote'
-import LoopCard from '../component/LoopCard'
 import { Settings } from "lucide-react";
 
 function Profile() {
@@ -43,14 +38,18 @@ function Profile() {
   const [showPost, setShowPost] = useState(true)
   const [replies, setReplies] = useState(false)
   const { weeklyKing } = useSelector(state => state.user);
-const [showWeeklyCard, setShowWeeklyCard] = useState(true);
+  const [showWeeklyCard, setShowWeeklyCard] = useState(true);
+  const [loading, setloading] = useState(false)
 
   const handleProfile = async () => {
+    setloading(true)
     try {
       const result = await axios.get(`${serverUrl}/api/user/getProfile/${userName}`, { withCredentials: true })
       dispatch(setProfileData(result.data))
     } catch (error) {
       console.log(error)
+    }finally{
+      setloading(false)
     }
   }
 
@@ -93,133 +92,116 @@ const [showWeeklyCard, setShowWeeklyCard] = useState(true);
 
   const a = profileData?.loops.length + profileData?.posts.length
 
+  if (loading) {
+    return (
+       <div className="min-h-screen bg-[#1f2730] text-white px-6 py-4 flex flex-col gap-10 ">
+
+      {/* Single div containing all skeletons */}
+      <div className="flex flex-col gap-10">
+
+        {/* HEADER */}
+        <div className="flex items-center justify-between">
+          <div className="bg-white/10 w-6 h-6 rounded-full" />
+          <div className="bg-white/10 w-40 h-5 rounded" />
+          <div className="bg-white/10 w-20 h-5 rounded" />
+        </div>
+
+        {/* PROFILE SECTION */}
+        <div className="flex flex-col items-center text-center gap-3">
+          <div className="bg-white/10 w-24 h-24 rounded-full" />
+          <div className="bg-white/10 w-48 h-5 rounded" />
+          <div className="bg-white/10 w-32 h-5 rounded" />
+        </div>
+
+        {/* STATS / INFO CARDS */}
+        <div className="grid grid-cols-3 gap-4">
+          <div className="bg-white/10 w-full h-20 rounded-lg" />
+          <div className="bg-white/10 w-full h-20 rounded-lg" />
+          <div className="bg-white/10 w-full h-20 rounded-lg" />
+        </div>
+
+        {/* CONTENT LIST */}
+        <div className="flex flex-col gap-4">
+          <div className="bg-white/10 w-full h-16 rounded-lg" />
+          <div className="bg-white/10 w-full h-16 rounded-lg" />
+          <div className="bg-white/10 w-full h-16 rounded-lg" />
+          <div className="bg-white/10 w-full h-16 rounded-lg" />
+        </div>
+
+      </div>
+    </div>
+    )
+  }
+
   return (
     <>
       <div className={`w-full h-screen bg-[var(--bg)] ${showFollowers || showFollowing ? "blur-sm" : "overflow-y-auto"}`}>
-        <div className='w-full h-[80px] flex justify-between items-center px-[30px] text-[var(--text)]'>
+        <div className='w-full h-[56px] sm:h-[80px] flex justify-between items-center px-4 sm:px-[30px] text-[var(--text)]'>
           <div className='text-[var(--text)] w-[25px] h-[25px] cursor-pointer'
-            onClick={() => navigate("/")}><MdOutlineKeyboardBackspace
-              className='text-[var(--text)] cursor-pointer w-[25px] h-[25px]' /></div>
-          <div className='font-semibold text-[20px]'>{profileData?.userName}</div>
-
+            onClick={() => navigate("/")}>
+            <MdOutlineKeyboardBackspace className='text-[var(--text)] cursor-pointer w-[25px] h-[25px]' />
+          </div>
+          <div className='font-semibold text-[18px] sm:text-[20px]'>{profileData?.userName}</div>
           <div className='flex items-center gap-2'>
-            <Settings size={24} className="text-[var(--text)] drop-shadow  hover:rotate-180 duration-700"
+            <Settings size={24} className="text-[var(--text)] drop-shadow hover:rotate-180 duration-700"
               onClick={() => navigate("/setting")}
             />
-            <div className='font-semibold cursor-pointer text-[20px]' onClick={() => handleLogOut()}>Log out</div>
+            <div className='font-semibold cursor-pointer text-[18px] sm:text-[20px]' onClick={() => handleLogOut()}>Log out</div>
           </div>
-
         </div>
 
-        <div className='w-full h-[150px] flex items-start gap-[20px] lg:gap-[50px] pt-[20px] px-[10px]  justify-center'>
+        <div className='w-full h-auto sm:h-[150px] flex flex-col sm:flex-row items-center sm:items-start gap-3 sm:gap-[20px] lg:gap-[50px] pt-4 sm:pt-[20px] px-4 sm:px-[10px] justify-center'>
 
-{/* 🏆 Weekly Score Card */}
-
-{showWeeklyCard && userData?._id === profileData?._id && profileData.weeklyKingScore > 0 && (
-   <div
-    className={`fixed inset-0 flex items-center justify-center z-111 
-      bg-black/50 backdrop-blur-sm transition-opacity duration-500
-      ${showWeeklyCard ? 'opacity-100' : 'opacity-0'}`}
-  >
-    <div
-      className={`bg-gradient-to-br from-yellow-400 via-orange-500 to-yellow-600
-        p-6 rounded-2xl shadow-2xl border-2 border-yellow-300 w-[300px] md:w-[400px]
-        transform transition-all duration-500
-        ${showWeeklyCard ? 'scale-100' : 'scale-90 opacity-0'}`}
-    >
-      <div className="flex flex-col items-center gap-2">
-        <span className="text-5xl drop-shadow-lg animate-bounce">👑</span>
-        <h2 className="text-xl md:text-2xl font-bold text-black">{profileData.name}</h2>
-        <p className="text-sm md:text-base text-black/80">Weekly Score</p>
-        <div className="text-3xl md:text-4xl font-extrabold text-black">{profileData.weeklyKingScore || 0} pts</div>
-        <div className="mt-3">
-          <button
-            className="px-4 py-2 rounded-full bg-black text-white hover:bg-gray-800 transition"
-            onClick={() => setShowWeeklyCard(false)}
-          >
-            Close
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-)}
-
-      
-          {weeklyKing?._id === profileData?._id ? (
-
-            <div className="relative w-[140px] h-[140px] flex items-center justify-center">
-
-              <div className="
-    absolute inset-0 rounded-full
-    bg-gradient-to-br from-yellow-400 via-orange-500 to-yellow-600
-    blur-[6px] opacity-70
-  " />
-
-              <div className="
-    absolute inset-[6px] rounded-full
-    bg-gradient-to-br from-[#3a2a00] via-[#1a1400] to-[#000]
-    shadow-[0_0_40px_rgba(255,200,0,0.8)]
-  " />
-
-              <div className="relative w-[120px] h-[120px]">
-
-                <div className="
-    absolute inset-0 rounded-full
-    bg-gradient-to-tr from-yellow-300 via-orange-500 to-yellow-300
-    animate-spin-slow
-  " />
-
-                <div className="absolute inset-[5px] rounded-full bg-black" />
-
-                <div className="absolute inset-[8px] rounded-full overflow-hidden">
-                  <img
-                    src={profileData?.profileImage || dp1}
-                    className="w-full h-full object-cover"
-                  />
+          {/* Weekly Score Card */}
+          {showWeeklyCard && userData?._id === profileData?._id && profileData.weeklyKingScore > 0 && (
+            <div className={`fixed inset-0 flex items-center justify-center z-111 bg-black/50 backdrop-blur-sm transition-opacity duration-500 ${showWeeklyCard ? 'opacity-100' : 'opacity-0'}`}>
+              <div className={`bg-gradient-to-br from-yellow-400 via-orange-500 to-yellow-600 p-6 rounded-2xl shadow-2xl border-2 border-yellow-300 w-[280px] sm:w-[300px] md:w-[400px] transform transition-all duration-500 ${showWeeklyCard ? 'scale-100' : 'scale-90 opacity-0'}`}>
+                <div className="flex flex-col items-center gap-2">
+                  <span className="text-5xl drop-shadow-lg animate-bounce">👑</span>
+                  <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-black">{profileData.name}</h2>
+                  <p className="text-sm sm:text-base text-black/80">Weekly Score</p>
+                  <div className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-black">{profileData.weeklyKingScore || 0} pts</div>
+                  <div className="mt-3">
+                    <button
+                      className="px-4 py-2 rounded-full bg-black text-white hover:bg-gray-800 transition"
+                      onClick={() => setShowWeeklyCard(false)}
+                    >
+                      Close
+                    </button>
+                  </div>
                 </div>
-
-                <div className="
-  absolute -bottom-1 -right-1
-  z-50
-  bg-gradient-to-r from-yellow-400 to-orange-500
-  text-black text-[11px] font-extrabold
-  px-2 py-[2px]
-  rounded-full
-  shadow-[0_4px_12px_rgba(255,180,0,0.9)]
-  border border-yellow-300
-">
-                  👑 KING
-                </div>
-
               </div>
-
-
-              <span className="
-    absolute -top-8 text-5xl
-    drop-shadow-[0_10px_20px_rgba(255,215,0,0.8)]
-    animate-float-crown
-  ">
-                👑
-              </span>
-
-            </div>
-
-          ) : (
-
-            /* 🙂 NORMAL USER DP */
-            <div className="w-[120px] h-[120px] rounded-full overflow-hidden border border-gray-600">
-              <img
-                src={profileData?.profileImage || dp1}
-                className="w-full h-full object-cover"
-              />
             </div>
           )}
 
-          <div>
-            <div className='font-semibold text-[22px] text-[var(--text)]'>{profileData?.name}</div>
-            <div className='text-[17px] text-[var(--text)]'>{profileData?.profession || "new User"}</div>
-            <div className='text-[17px] text-[var(--text)]'>{profileData?.bio}</div>
+          {/* Profile Image */}
+          {weeklyKing?._id === profileData?._id ? (
+            <div className="relative w-[110px] h-[110px] sm:w-[140px] sm:h-[140px] flex items-center justify-center">
+              <div className="absolute inset-0 rounded-full bg-gradient-to-br from-yellow-400 via-orange-500 to-yellow-600 blur-[6px] opacity-70" />
+              <div className="absolute inset-[5px] rounded-full bg-gradient-to-br from-[#3a2a00] via-[#1a1400] to-[#000] shadow-[0_0_40px_rgba(255,200,0,0.8)]" />
+              <div className="relative w-full h-full">
+                <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-yellow-300 via-orange-500 to-yellow-300 animate-spin-slow" />
+                <div className="absolute inset-[5px] rounded-full bg-black" />
+                <div className="absolute inset-[8px] rounded-full overflow-hidden">
+                  <img src={profileData?.profileImage || dp1} className="w-full h-full object-cover" />
+                </div>
+                <div className="absolute -bottom-1 -right-1 z-50 bg-gradient-to-r from-yellow-400 to-orange-500 text-black text-[10px] sm:text-[11px] font-extrabold px-2 py-[2px] rounded-full shadow-[0_4px_12px_rgba(255,180,0,0.9)] border border-yellow-300">
+                  👑 KING
+                </div>
+              </div>
+              <span className="absolute -top-6 sm:-top-8 text-4xl sm:text-5xl drop-shadow-[0_10px_20px_rgba(255,215,0,0.8)] animate-float-crown">👑</span>
+            </div>
+          ) : (
+            <div className="w-[90px] h-[90px] sm:w-[120px] sm:h-[120px] rounded-full overflow-hidden border border-gray-600">
+              <img src={profileData?.profileImage || dp1} className="w-full h-full object-cover" />
+            </div>
+          )}
+
+          {/* Profile Info */}
+          <div className="flex flex-col items-center sm:items-start gap-1">
+            <div className='font-semibold text-[16px] sm:text-[22px] text-[var(--text)]'>{profileData?.name}</div>
+            <div className='text-[13px] sm:text-[17px] text-[var(--text)]'>{profileData?.profession || "new User"}</div>
+            <div className='text-[13px] sm:text-[17px] text-[var(--text)] line-clamp-2'>{profileData?.bio}</div>
           </div>
         </div>
 
@@ -353,6 +335,7 @@ const [showWeeklyCard, setShowWeeklyCard] = useState(true);
                 Threads
               </div>
             </div>
+
 
             <Nav />
             {PostType === "allPost" &&
@@ -500,8 +483,15 @@ const [showWeeklyCard, setShowWeeklyCard] = useState(true);
                   </div>
                 </div>
 
-                <div className="w-full flex justify-center  mt-3">
-                  {showPost && <Threads mythreads={profileData?._id} mythreadTailwind={true} />}
+                <div className="w-full flex justify-center relative mt-3">
+                  {showPost &&
+                    <div>
+                      <h1 className="text-black text-[20px] absolute lg:left-45 font-bold mb-4">
+                        {profileData._id === userData._id ? "Your Threads" : "Threads"}
+                      </h1>
+                      <Threads mythreads={profileData?._id} mythreadTailwind={true} />
+                    </div>
+                  }
                   {replies && <Comment userId={profileData?._id} mythreadTailwind={true} />}
                   {showRetweet && <Retweets userId={profileData?._id} mythreadTailwind={true} />}
                   {showQuote && <Quote userId={profileData?._id} mythreadTailwind={true} />}

@@ -14,8 +14,9 @@ import { FaRegSmile } from 'react-icons/fa'
 import EmojiPicker from 'emoji-picker-react'
 import { MdCall, MdVideoCall } from "react-icons/md";
 import { ZegoUIKitPrebuilt } from '@zegocloud/zego-uikit-prebuilt'
+import { toast } from 'react-toastify'
 
-function MessageArea() {
+function MessageArea({user}) {
 
     const { selectedUser, messages } = useSelector(state => state.message)
     const { userData } = useSelector(state => state.user)
@@ -57,16 +58,12 @@ function MessageArea() {
     const getAllMessages = async (e) => {
 
         try {
-
             const result = await axios.get(
                 `${serverUrl}/api/message/getAll/${selectedUser._id}`,
                 { withCredentials: true }
             );
-
             dispatch(setMessages(result.data || []));
-
             console.log(result);
-
         } catch (error) {
             console.log("Send message error:", error);
         }
@@ -78,18 +75,18 @@ function MessageArea() {
         }
     }, [selectedUser]);
 
-    useEffect(() => {
-        if (!socket) return;
+    // useEffect(() => {
+    //     if (!socket) return;
 
-        const handleMessage = (mess) => {
-            dispatch(addMessage(mess));
-        };
+    //     const handleMessage = (mess) => {
+    //         dispatch(addMessage(mess));
+    //         toast.info(`${mess.sender?.userName}: ${mess?.message}`);
+    //     };
+        
+    //     socket.on("newMessage", handleMessage);
+    //     return () => socket.off("newMessage", handleMessage);
 
-        socket.on("newMessage", handleMessage);
-
-        return () => socket.off("newMessage", handleMessage);
-
-    }, [socket]);
+    // }, [socket,dispatch]);
 
 
     const onEmojiClick = (emojiData) => {
@@ -120,17 +117,18 @@ function MessageArea() {
             </div>
 
             <div className='w-full h-[90%] pt-[100px] lg:pb-[120px] px-[40px] flex flex-col gap-[50px] overflow-auto bg-[var(--bg)]'>
-               
 
-                {messages && messages.map((mess, index) => (
-                    <div key={index}>
-                        {mess?.sender == userData._id ?
-                            <SenderMessage message={mess} /> :
-                            <ReceiverMessage message={mess} />
-                        }
 
-                    </div>
-                ))}
+               {messages.map((mess, index) => (
+  <div key={index}>
+    {mess?.sender?._id === userData?._id ? (
+      <SenderMessage message={mess} />
+    ) : (
+      <ReceiverMessage message={mess} />
+    )}
+  </div>
+))}
+
 
 
             </div>
@@ -159,7 +157,7 @@ function MessageArea() {
 
                     {
                         showPicker &&
-                      
+
                         <div className='absolute bottom-[70px] right-4 w-[370px] max-w-[90vw] bg-[#1a1c1d] 
                             rounded-2xl shadow-xl border border-white/10 p-3 z-50sm:right-0 
                             z-50'>

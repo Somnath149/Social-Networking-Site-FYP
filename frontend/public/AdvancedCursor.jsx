@@ -1,106 +1,100 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export default function AdvancedCursor() {
   const cursor = useRef(null);
   const follower = useRef(null);
+  const [label, setLabel] = useState(""); // Hover par text dikhane ke liye
 
   useEffect(() => {
     const c = cursor.current;
     const f = follower.current;
 
-    let x = 0, y = 0;
-    let fx = 0, fy = 0;
+    let x = 0, y = 0;   // Mouse position
+    let cx = 0, cy = 0; // Dot position
+    let fx = 0, fy = 0; // Follower position
 
     const move = (e) => {
-      x = e.clientX;
-      y = e.clientY;
+  x = e.clientX;
+  y = e.clientY;
 
-      c.style.transform = `translate(${x}px, ${y}px)`;
+  const target = e.target;
+  // Yeh line check karegi ki kya wo element .cursor-dot1 hai, ya koi link hai, ya button hai
+  const hoverEl = target.closest(".cursor-dot1, a, button"); 
 
-      checkHover(x, y);
-      applyMagnetic(x, y);
-    };
+  if (hoverEl) {
+    f.classList.add("is-active");
+    // Text dikhane ke liye aap element par data-cursor-text="Read" likh sakte hain
+    setLabel(hoverEl.getAttribute("data-cursor-text") || "");
+  } else {
+    f.classList.remove("is-active");
+    setLabel("");
+  }
+};
 
     const animate = () => {
-      fx += (x - fx) * 0.18; // faster
-fy += (y - fy) * 0.18;
+      // Dot speed (Tez)
+      cx += (x - cx) * 0.2;
+      cy += (y - cy) * 0.2;
+      // Follower speed (Slightly slower for fluid feel)
+      fx += (x - fx) * 0.12;
+      fy += (y - fy) * 0.12;
 
-      f.style.transform = `translate(${fx}px, ${fy}px)`;
+      c.style.transform = `translate3d(${cx}px, ${cy}px, 0) translate(-50%, -50%)`;
+      f.style.transform = `translate3d(${fx}px, ${fy}px, 0) translate(-50%, -50%)`;
+
       requestAnimationFrame(animate);
     };
-    animate();
 
+    const frameId = requestAnimationFrame(animate);
     window.addEventListener("mousemove", move);
-    return () => window.removeEventListener("mousemove", move);
+    
+    return () => {
+      window.removeEventListener("mousemove", move);
+      cancelAnimationFrame(frameId);
+    };
   }, []);
-
-  // ---------- HOVER DETECT ----------
-  const checkHover = (mouseX, mouseY) => {
-    const hoverEls = document.querySelectorAll(".cursor-dot1");
-
-    let isHovering = false;
-
-    hoverEls.forEach((el) => {
-      const rect = el.getBoundingClientRect();
-      if (
-        mouseX > rect.left &&
-        mouseX < rect.right &&
-        mouseY > rect.top &&
-        mouseY < rect.bottom
-      ) {
-        isHovering = true;
-      }
-    });
-
-    if (isHovering) {
-      cursor.current.classList.add("cursor-hover-active");
-      follower.current.classList.add("cursor-hover-active-follower");
-    } else {
-      cursor.current.classList.remove("cursor-hover-active");
-      follower.current.classList.remove("cursor-hover-active-follower");
-    }
-  };
-
-  // ---------- MAGNETIC PULL ----------
-  const applyMagnetic = (mouseX, mouseY) => {
-    const magneticEls = document.querySelectorAll("[data-magnetic]");
-
-    magneticEls.forEach((el) => {
-      const rect = el.getBoundingClientRect();
-      const cx = rect.left + rect.width / 2;
-      const cy = rect.top + rect.height / 2;
-
-      const dx = mouseX - cx;
-      const dy = mouseY - cy;
-      const dist = Math.hypot(dx, dy);
-
-      const threshold = 150;     // distance in px
-      const maxMove = 18;        // px movement
-
-      if (dist < threshold) {
-        const pull = (1 - dist / threshold) * maxMove;
-
-        const tx = (-dx / dist) * pull;
-        const ty = (-dy / dist) * pull;
-
-        el.style.transform = `translate(${tx}px, ${ty}px)`;
-        el.style.transition = "transform 0.15s ease-out";
-
-        // cursor expand
-        cursor.current.style.scale = 1.3;
-        follower.current.style.scale = 1.15;
-      } else {
-        el.style.transform = "";
-        cursor.current.style.scale = 1;
-        follower.current.style.scale = 1;
-      }
-    });
-  };
 
   return (
     <>
-       <div ref={cursor} className="cursor-dot "></div>
-      <div ref={follower} className="cursor-follower border-[var(--primary)] bg-[var(--cursor)]"></div>
+      <div className="hidden lg:block">
+        {/* Main Tiny Dot */}
+        <div ref={cursor} className="fixed top-0 left-0 w-1.5 h-1.5 bg-white rounded-full z-[1111] pointer-events-none mix-blend-difference" />
+        
+        {/* Large Follower with Text */}
+        <div 
+          ref={follower} 
+          className="fixed top-0 left-0 w-7 h-7 border border-white/30 rounded-full z-[1111] pointer-events-none transition-[width,height,background-color] duration-300 flex items-center justify-center overflow-hidden"
+          style={{ mixBlendMode: 'difference' }}
+        >
+          {label && (
+            <span className="text-[10px] font-bold uppercase tracking-widest text-white animate-fade-in">
+              {label}
+            </span>
+          )}
+        </div>
+      </div>
+
+      <style jsx global>{`
+        body { cursor: none !important; }
+        a, button { cursor: none !important; }
+        
+        /* Hover State Classes */
+        .is-active {
+          width: 40px !important;
+          height: 40px !important;
+          background-color: white !important;
+          border-color: white !important;
+        }
+
+        .animate-fade-in {
+          animation: fadeIn 0.3s ease forwards;
+        }
+
+        @keyframes fadeIn {
+          from { opacity: 0; transform: scale(0.5); }
+          to { opacity: 1; transform: scale(1); }
+        }
+      `}</style>
     </>
   );
 }

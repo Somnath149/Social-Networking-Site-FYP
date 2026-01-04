@@ -110,7 +110,7 @@ const CheckIcon = () => (
 );
 
 
-const ForgotPassword = () => {
+const ForgotPassword = ({login}) => {
    
     const [step, setStep] = useState(1)
     const [email, setEmail] = useState("")
@@ -307,7 +307,7 @@ const ForgotPassword = () => {
                             Resend OTP
                         </span>
                     )}
-                    {(step === 1 || step === 3) && (
+{            !login  &&  <>    {(step === 1 || step === 3) && (
                         <>
                             Remember your password?{' '}
                             <span 
@@ -317,7 +317,7 @@ const ForgotPassword = () => {
                                 Sign In
                             </span>
                         </>
-                    )}
+                    )} </>}
                 </p>
             </div>
         </div>

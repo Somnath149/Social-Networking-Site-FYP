@@ -12,7 +12,7 @@ function NotificationCard({ noti }) {
             <div className='flex gap-[10px] items-start'>
                 <div className='w-[40px] h-[40px] border-2 border-[var(--primary)] rounded-full cursor-pointer overflow-hidden'>
                     <img
-                        src={noti.sender.profileImage || dp}
+                        src={noti.sender?.profileImage || dp}
                         alt=""
                         className='w-full h-full object-cover'
                     />
@@ -20,10 +20,10 @@ function NotificationCard({ noti }) {
 
                 <div className='flex flex-col'>
                     <h1 className='text-[16px] text-[var(--text)] font-semibold'>
-                        {noti.sender.userName}
+                        {noti.sender?.userName}
                     </h1>
                     <div className='text-[15px] text-gray-700'>
-                        {noti.message}
+                        {noti?.message}
                     </div>
                 </div>
             </div>

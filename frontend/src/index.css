@@ -66,7 +66,7 @@
   --bg: #ffffff;
   --text: #0f172a;
   --font: 'Inter', sans-serif;
-  --cursor: #000000;
+  --cursor: #3b72eacb;
 }
 
 /* Dark */
@@ -98,6 +98,7 @@
   --font: 'Merriweather', serif;
   --cursor: #000000;
 }
+
 
 
 /* Orange */

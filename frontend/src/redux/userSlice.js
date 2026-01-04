@@ -11,7 +11,8 @@ const userSlice = createSlice({
         searchData:null,
         notificationData:[],
         weeklyKing: null,
-        allUsers:[]
+        allUsers:[],
+         notificationsEnabled: true,
     },
     reducers: {
         setUserData: (state, action) => {
@@ -50,19 +51,25 @@ const userSlice = createSlice({
           //  console.log("Inside reducer - Search Data:", action.payload);
         },
         setNotificationData: (state, action) => {
-            state.notificationData = action.payload
-           // console.log("Inside reducer - notification Data:", action.payload);
-        },
+  state.notificationData = action.payload;
+},
+
+addNotification: (state, action) => {
+  state.notificationData.unshift(action.payload);
+},
+ setNotificationsEnabled: (state, action) => {
+    state.notificationsEnabled = action.payload;
+  },
         setWeeklyKing: (state, action) => {
             state.weeklyKing = action.payload;
-            console.log("Inside reducer - notification Data:", action.payload);
+          //  console.log("Inside reducer - notification Data:", action.payload);
         },
         setAllUsers: (state, action) => {
             state.allUsers = action.payload;
-            console.log("Inside reducer - all user Data:", action.payload);
+          //  console.log("Inside reducer - all user Data:", action.payload);
         },
     }
 })
 
-export const { setUserData, setWeeklyKing, setAllUsers, setNotificationData, setSuggestedUser, setProfileData, setFollowing, toggleFollow, setSearchData } = userSlice.actions
+export const { setUserData, setWeeklyKing, setAllUsers,addNotification,setNotificationsEnabled, setNotificationData, setSuggestedUser, setProfileData, setFollowing, toggleFollow, setSearchData } = userSlice.actions
 export default userSlice.reducer

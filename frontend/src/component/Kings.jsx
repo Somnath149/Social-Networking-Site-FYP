@@ -12,7 +12,7 @@ const navigate = useNavigate()
 
 
   return (
-    <div className={`${threadTailwind ? "lg:w-[50%] w-full bg-[var(--bg)] h-screen overflow-y-scroll p-4" : 
+    <div className={`${threadTailwind ? "lg:w-[60%] w-full bg-[var(--bg)] h-screen overflow-y-scroll p-4" : 
     "w-full h-[100vh] bg-[var(--bg)] overflow-auto p-4"} `}>
 
   {/* 🏆 Leaderboard */}

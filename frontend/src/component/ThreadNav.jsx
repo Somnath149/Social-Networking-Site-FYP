@@ -20,7 +20,7 @@ import { serverUrl } from "../App";
 import dp1 from "../assets/dp1.jpeg"
 import axios from "axios";
 import { FaCrown } from "react-icons/fa6";
-
+import { RiSparkling2Line } from "react-icons/ri";
 
 function ThreadNav({ setCenterView, setShowOtherUsers, setShowTrends }) {
     const navigate = useNavigate()
@@ -54,7 +54,7 @@ function ThreadNav({ setCenterView, setShowOtherUsers, setShowTrends }) {
         }
     }
     return (
-        <div className="w-[25%] px-[20px] hidden lg:block h-[100vh] bg-[var(--bg)] border-r-2 border-gray-900 ">
+        <div className="w-[30%] px-[20px] hidden lg:block h-[100vh] bg-[var(--bg)] border-r-2 border-gray-900 ">
             <div className='w-full h-[80px] flex   items-center gap-[20px] px-[20px]'>
                 <MdOutlineKeyboardBackspace onClick={() => navigate(`/`)}
                     className='text-[var(--text)] cursor-dot1 cursor-pointer w-[25px] h-[25px]' />
@@ -74,29 +74,44 @@ function ThreadNav({ setCenterView, setShowOtherUsers, setShowTrends }) {
                         duration-150
                         hover:scale-110'
                         />Home</div>
-                    <div className="flex text-[var(--text)] justify-start cursor-dot1 cursor-pointer gap-4" onClick={() => navigate(`/Search`)}>
+                  
+                  <div className="flex text-[var(--text)] justify-start cursor-dot1 cursor-pointer gap-4" 
+                    onClick={() => setCenterView("foryou")}>
+                        <RiSparkling2Line  className='text-[var(--text)] w-[25px] h-[25px] cursor-pointer  transition-transform
+                        duration-150
+                        hover:scale-110'
+                        /> For You</div>
+
+                    <div className="flex text-[var(--text)] justify-start cursor-dot1 cursor-pointer gap-4"
+                     onClick={() => navigate(`/Search`)}>
                         <IoSearchOutline className='text-[var(--text)] w-[25px] h-[25px] cursor-pointer  transition-transform
                         duration-150
                         hover:scale-110'
                         /> Search</div>
-                    <div className="flex text-[var(--text)] justify-start cursor-dot1 cursor-pointer gap-4" onClick={() => setCenterView("notifications")}>
+                    
+                    <div className="flex text-[var(--text)] justify-start cursor-dot1 cursor-pointer gap-4" 
+                    onClick={() => setCenterView("notifications")}>
                         <IoNotificationsOutline className='text-[var(--text)] w-[25px] h-[25px] cursor-pointer  transition-transform
                         duration-150
                         hover:scale-110'
                         />Notifications</div>
-                    <div className="flex text-[var(--text)] justify-start cursor-dot1 cursor-pointer gap-4" onClick={() => setCenterView("messages")}>
+
+                    <div className="flex text-[var(--text)] justify-start cursor-dot1 cursor-pointer gap-4" 
+                    onClick={() => setCenterView("messages")}>
                         <RiMessage2Line className='text-[var(--text)] w-[25px] h-[25px] cursor-pointer  transition-transform
                         duration-150
                         hover:scale-110'
                         />Messages</div>
 
-                    <div className="flex text-[var(--text)] justify-start cursor-pointer gap-4" onClick={() => setCenterView("king")}>
+                    <div className="flex text-[var(--text)] justify-start cursor-pointer gap-4" 
+                    onClick={() => setCenterView("king")}>
                         <FaCrown className='text-[var(--text)] w-[25px] h-[25px] cursor-pointer  transition-transform
                         duration-150
                         hover:scale-110'
                             onClick={() => navigate(`/threads`)} />Kings</div>
 
-                    <div className="flex  text-[var(--text)] justify-start cursor-dot1 cursor-pointer gap-4" onClick={() => navigate(`/profile/${userData.userName}`)}>
+                    <div className="flex  text-[var(--text)] justify-start cursor-dot1 cursor-pointer gap-4"
+                     onClick={() => navigate(`/profile/${userData.userName}`)}>
                         <RiUser3Line className='text-[var(--text)] w-[25px] h-[25px] cursor-pointer  transition-transform
                         duration-150
                         hover:scale-110'

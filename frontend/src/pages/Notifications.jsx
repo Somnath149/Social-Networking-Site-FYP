@@ -45,7 +45,7 @@ function Notifications({ threadTailwind }) {
     }, [])
 
     return (
-        <div className={`${threadTailwind ? "lg:w-[50%] w-full bg-[var(--bg)] h-screen overflow-y-scroll" : "w-full h-[100vh] bg-[var(--bg)] overflow-auto"} `}>
+        <div className={`${threadTailwind ? "lg:w-[60%] w-full bg-[var(--bg)] h-screen overflow-y-scroll" : "w-full h-[100vh] bg-[var(--bg)] overflow-auto"} `}>
             <div className='w-full h-[80px] flex left-[20px] items-center gap-[20px] px-[20px] lg:hidden'>
                 <MdOutlineKeyboardBackspace
                     onClick={() => navigate(`/`)}
@@ -56,16 +56,16 @@ function Notifications({ threadTailwind }) {
 
             {threadTailwind && <h1 className='text-[var(--text)] text-[20px] p-[20px] font-semibold'>Notifications</h1>}
             {notificationData?.length === 0 && (
-  <div className="flex flex-col items-center justify-center py-10 text-center">
-    <span className="text-4xl mb-2">🔔</span>
-    <span className="text-sm sm:text-base text-gray-400">
-      No notifications yet
-    </span>
-    <span className="text-xs text-gray-500 mt-1">
-      You’re all caught up ✨
-    </span>
-  </div>
-)}
+                <div className="flex flex-col items-center justify-center py-10 text-center">
+                    <span className="text-4xl mb-2">🔔</span>
+                    <span className="text-sm sm:text-base text-gray-400">
+                        No notifications yet
+                    </span>
+                    <span className="text-xs text-gray-500 mt-1">
+                        You’re all caught up ✨
+                    </span>
+                </div>
+            )}
 
             <motion.div
                 className="w-full flex flex-col gap-[20px] h-[100%] p-[10px]"

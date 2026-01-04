@@ -9,7 +9,7 @@ import getCurrentUser from './hooks/getCurrentUser'
 import getSuggestedUser from './hooks/getSuggestedUser'
 import Profile from './pages/Profile'
 import { useTransition, animated } from '@react-spring/web'
-import { setFollowing, setNotificationData, setUserData } from './redux/userSlice'
+import { addNotification, setFollowing, setNotificationData, setUserData } from './redux/userSlice'
 import { useDispatch } from 'react-redux'
 import EditProfile from './pages/EditProfile'
 import Upload from './pages/Upload'
@@ -40,6 +40,12 @@ import useFollowingList from './hooks/getfollowingList'
 import usePrevChatUsers from './hooks/usePrevChatUsers'
 import useAllUserScore from './hooks/useAllUserScore'
 import Settings from './pages/Setting'
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { addMessage } from './redux/messageSlice'
+import useFollowPost from './hooks/useFollowPost'
+import NotFound from './pages/NotFound'
+
 
 export const serverUrl = "http://localhost:8000"
 function App() {
@@ -57,37 +63,38 @@ function App() {
   getAllLoops()
   getAllNotifications()
   getAllThreads()
+  useFollowPost()
   useTrendingPost()
 
-    useEffect(() => {
-  const savedTheme = localStorage.getItem("theme") || "theme-default";
-  document.documentElement.className = savedTheme;
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("theme") || "theme-default";
+    document.documentElement.className = savedTheme;
 
-  const resetVars = () => {
-    ["--bg", "--text", "--primary", "--secondary", "--cursor"].forEach(v =>
-      document.documentElement.style.removeProperty(v)
+    const resetVars = () => {
+      ["--bg", "--text", "--primary", "--secondary", "--cursor"].forEach(v =>
+        document.documentElement.style.removeProperty(v)
+      );
+    };
+
+    if (savedTheme === "theme-default") {
+      resetVars();
+      return;
+    }
+
+    const savedCustomThemes = JSON.parse(
+      localStorage.getItem("customThemes") || "[]"
     );
-  };
 
-  if (savedTheme === "theme-default") {
-    resetVars();
-    return;
-  }
+    const match = savedCustomThemes.find(t => t.class === savedTheme);
 
-  const savedCustomThemes = JSON.parse(
-    localStorage.getItem("customThemes") || "[]"
-  );
-
-  const match = savedCustomThemes.find(t => t.class === savedTheme);
-
-  if (match?.variables) {
-    Object.entries(match.variables).forEach(([key, val]) => {
-      document.documentElement.style.setProperty(key, val);
-    });
-  } else {
-    resetVars();
-  }
-}, []);
+    if (match?.variables) {
+      Object.entries(match.variables).forEach(([key, val]) => {
+        document.documentElement.style.setProperty(key, val);
+      });
+    } else {
+      resetVars();
+    }
+  }, []);
 
 
   useEffect(() => {
@@ -137,9 +144,58 @@ function App() {
 
 
 
-  socket?.on("newNotification", (noti) => {
-    dispatch(setNotificationData([...notificationData, noti]))
-  })
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleNewNotification = (noti) => {
+      dispatch(addNotification(noti));
+      toast.info(`${noti.sender?.userName}: ${noti.message}`);
+    };
+
+    socket.on("newNotification", handleNewNotification);
+
+    return () => {
+      socket.off("newNotification", handleNewNotification);
+    };
+  }, [socket, dispatch]);
+
+  const location1 = useLocation();
+
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleMessage = (mess) => {
+      dispatch(addMessage(mess));
+
+      if (location1.pathname !== "/messageArea") {
+        let toastText = "";
+
+        if (mess?.message) {
+          const limit = 30;
+          toastText =
+            mess.message.length > limit
+              ? mess.message.slice(0, limit) + "..."
+              : mess.message;
+        }
+        else if (mess?.post) {
+          toastText = "Shared a post";
+        }
+        else if (mess?.loop) {
+          toastText = "Shared a loop";
+        }
+        else {
+          toastText = "Sent a message";
+        }
+
+        toast.info(`${mess?.sender?.userName}: ${toastText}`);
+      }
+    };
+
+    socket.on("newMessage", handleMessage);
+    return () => socket.off("newMessage", handleMessage);
+
+  }, [socket, dispatch, location1.pathname]);
+
 
   if (loading) {
     return (
@@ -157,6 +213,7 @@ function App() {
         <Route path='/signup' element={!userData ? <SignUp /> : <Navigate to={"/"} />} />
         <Route path='/signin' element={!userData ? <SignIn /> : <Navigate to={"/"} />} />
         <Route path='/forgot-password' element={!userData ? <ForgotPassword /> : <Navigate to={"/"} />} />
+        <Route path='*' element={userData ? <NotFound /> : <Navigate to={"/signin"} />} />
         <Route path='/' element={userData ? <Home /> : <Navigate to={"/signin"} />} />
         <Route path='/profile/:userName' element={userData ? <Profile /> : <Navigate to={"/signin"} />} />
         <Route path='/story/:userName' element={userData ? <Story /> : <Navigate to={"/signin"} />} />
@@ -175,6 +232,19 @@ function App() {
         <Route path="/setting" element={userData ? <Settings /> : <Navigate to={"/signin"} />} />
         {/* <Route path="/admin" element={userData ? <Admin /> : <Navigate to={"/signin"} />} /> */}
       </Routes>
+
+      <ToastContainer
+        position="bottom-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        pauseOnFocusLoss={false}
+        pauseOnHover
+        draggable
+        theme="dark"
+      />
+
     </div>
   )
 }

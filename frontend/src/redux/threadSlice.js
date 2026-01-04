@@ -5,7 +5,7 @@ const threadSlice = createSlice({
     initialState: {
         threads: [],
         commentedThreads: [],
-       
+        followThread: []
     },
     reducers: {
         setThreads: (state, action) => {
@@ -14,6 +14,11 @@ const threadSlice = createSlice({
 
         addThread: (state, action) => {
             state.threads.unshift(action.payload);
+        },
+
+        setFollowThreads: (state, action) => {
+            state.followThread = action.payload;
+            console.log("Inside reducer - all Data:", action.payload);
         },
 
         updateLikes: (state, action) => {
@@ -39,7 +44,7 @@ const threadSlice = createSlice({
 
         setCommentedThreads: (state, action) => {
             state.commentedThreads = action.payload;
-            console.log("Inside reducer - commented threads Data:", action.payload);
+          //  console.log("Inside reducer - commented threads Data:", action.payload);
         },
 
 
@@ -66,7 +71,7 @@ const threadSlice = createSlice({
             } else {
                 state.threads.unshift(action.payload);
             }
-            console.log("Inside reducer - quote Data:", action.payload);
+          //  console.log("Inside reducer - quote Data:", action.payload);
         },
 
     }
@@ -80,7 +85,7 @@ export const {
     addRetweet,
     setCommentedThreads,
     addQuoteThread,
-   
+    setFollowThreads
 } = threadSlice.actions;
 
 export default threadSlice.reducer;

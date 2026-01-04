@@ -12,6 +12,7 @@ import { useNavigate } from 'react-router-dom';
 import Notifications from '../pages/Notifications';
 import PsyncTitle from '../../public/PsyncTitle';
 import PsyIncLogo from '../../public/PsyIncLogo';
+import { FaPlusSquare } from 'react-icons/fa';
 function LeftSide() {
     const [showNotifications, setShowNotifications] = useState(false)
     const [randomUsers, setRandomUsers] = useState([]);
@@ -39,14 +40,25 @@ function LeftSide() {
         }
     }, [suggestedUser]);
 
+
+    
     return (
         <div className={`w-[25%] hidden lg:block h-[100vh] bg-[var(--bg)] border-r-2 border-gray-900 
         ${showNotifications ? "overflow-auto" : ""}`}>
             <div className='w-[full] h-[100px] flex items-center justify-between p-[20px]'>
 
-                <div data-magnetic onClick={() => navigate("/theme")} className='text-[40px] font-bold text-gray-400'>
+                <div  onClick={() => navigate("/theme")} className='text-[40px] font-bold text-gray-400'>
                     <PsyIncLogo />
                 </div>
+
+<div className='flex gap-3 items-center'>
+
+ <div className='relative flex flex-col items-center group cursor-pointer' onClick={() => navigate(`/upload`)}>
+                <FaPlusSquare className='text-white cursor-dot1 w-[20px] h-[20px] transition-all duration-300 transform
+                    group-hover:scale-125 group-hover:-translate-y-1 group-hover:text-blue-400 
+                    group-hover:drop-shadow-[0_0_10px_#1DA1F2]'/>
+               
+            </div>
 
                 <div className='relative z-[100]' onClick={() => setShowNotifications(prev => !prev)}>
                     <FaRegHeart
@@ -57,6 +69,7 @@ function LeftSide() {
                         (<div className='w-[10px] h-[10px] bg-blue-600 rounded-full absolute top-0 right-[-5px] tiny-bounce'></div>)
                     }
                 </div>
+</div>
             </div>
 
             {!showNotifications && <>

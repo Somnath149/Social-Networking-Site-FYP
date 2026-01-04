@@ -1,12 +1,25 @@
-import React from "react";
+import React, { useRef, useState } from "react";
 import { FaTimes } from "react-icons/fa";
+import { FiVolume2, FiVolumeX } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 
 function ThreadPreview({ thread, onClose }) {
     if (!thread) return null;
 
+    const [isLoading, setIsLoading] = useState(true);
+    const [isPlaying, setIsPlaying] = useState(true)
+    const [isMuted, setIsMuted] = useState(true)
+    const videoRef = useRef()
     const navigate = useNavigate();
-
+    const handleClick = () => {
+        if (isPlaying) {
+            videoRef.current.pause()
+            setIsPlaying(false)
+        } else {
+            videoRef.current.play()
+            setIsPlaying(true)
+        }
+    }
     return (
         <div className="fixed inset-0 bg-[var(--bg)] bg-opacity-70 flex justify-center items-center z-50 p-4">
             <div className="w-full max-w-3xl bg-[var(--primary)] text-[var(--text)] text-[var(--text1)] rounded-2xl p-5 relative border border-[var(--secondary)] overflow-y-auto max-h-[90vh]">
@@ -19,11 +32,11 @@ function ThreadPreview({ thread, onClose }) {
                 </button>
 
                 <div className="flex gap-3 items-center cursor-pointer mb-4"
-                   
+
                 >
                     <img
                         src={thread.author?.profileImage}
-                         onClick={() => navigate(`/profile/${thread.author?.userName}`)}
+                        onClick={() => navigate(`/profile/${thread.author?.userName}`)}
                         className="w-12 h-12 rounded-full border border-gray-600 object-cover"
                     />
                     <div>
@@ -49,11 +62,34 @@ function ThreadPreview({ thread, onClose }) {
                 )}
 
                 {thread.mediaType === "video" && thread.video && (
-                    <video
-                        src={thread.video}
-                        controls
-                        className="w-full max-h-[400px] rounded-xl mt-3 border border-gray-700 object-contain"
-                    />
+                    <div>
+                        <div className='absolute top-35 z-[100] right-70' onClick={() => setIsMuted(prev => !prev)}>
+                                {!isMuted ? <FiVolume2 className='w-[20px] h-[20px] cursor-pointer  text-white font-semibold' /> :
+                                  <FiVolumeX className='w-[20px] h-[20px] cursor-pointer  text-white font-semibold' />}
+                              </div>
+                        <video
+                            src={thread.video}
+                            ref={videoRef}
+                            onClick={handleClick}
+                            playsInline
+                            autoPlay
+                            muted={isMuted}
+                            loop
+                            onLoadStart={() => setIsLoading(true)}
+                            onLoadedData={() => setIsLoading(false)}
+                            onCanPlay={() => setIsLoading(false)}
+                            onWaiting={() => setIsLoading(true)}
+                            onPlaying={() => setIsLoading(false)}
+                            onStalled={() => setIsLoading(true)}
+                            className="w-full max-h-[400px] rounded-xl mt-3 border border-gray-700 object-contain"
+                        />
+                        {isLoading && (
+                            <div className="absolute inset-0 z-[200] flex items-center justify-center bg-black/40">
+                                <div className="w-10 h-10 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+                            </div>
+                        )}
+                    </div>
+
                 )}
 
                 {thread.quoteThread && (
@@ -80,11 +116,33 @@ function ThreadPreview({ thread, onClose }) {
                         )}
 
                         {thread.quoteThread.mediaType === "video" && thread.quoteThread.video && (
-                            <video
-                                src={thread.quoteThread.video}
-                                controls
-                                className="w-full max-h-[300px] rounded-xl mt-2 border border-gray-700 object-contain"
-                            />
+                            <div>
+                                <div className='absolute top-[20px] z-[100] right-[20px]' onClick={() => setIsMuted(prev => !prev)}>
+                                        {!isMuted ? <FiVolume2 className='w-[20px] h-[20px] cursor-pointer  text-white font-semibold' /> :
+                                          <FiVolumeX className='w-[20px] h-[20px] cursor-pointer  text-white font-semibold' />}
+                                      </div>
+                                <video
+                                    src={thread.quoteThread.video}
+                                    ref={videoRef}
+                                    onClick={handleClick}
+                                    playsInline
+                                    autoPlay
+                                    loop
+                                    onLoadStart={() => setIsLoading(true)}
+                                    onLoadedData={() => setIsLoading(false)}
+                                    onCanPlay={() => setIsLoading(false)}
+                                    onWaiting={() => setIsLoading(true)}
+                                    onPlaying={() => setIsLoading(false)}
+                                    onStalled={() => setIsLoading(true)}
+                                    className="w-full max-h-[300px] rounded-xl mt-2 border border-gray-700 object-contain"
+                                />
+
+                                {isLoading && (
+                                    <div className="absolute inset-0 z-[200] flex items-center justify-center bg-black/40">
+                                        <div className="w-10 h-10 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+                                    </div>
+                                )}
+                            </div>
                         )}
                     </div>
                 )}

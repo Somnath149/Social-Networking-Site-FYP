@@ -22,12 +22,13 @@ function Messages({ mwidth, m }) {
 
   return (
 
-    <div className={`${mwidth ? "lg:w-[50%] w-full min-h-[100vh] flex flex-col bg-[var(--bg)] gap-[20px] p-[10px]" :
+    <div className={`${mwidth ? "lg:w-[60%] w-full min-h-[100vh] flex flex-col bg-[var(--bg)] gap-[20px] p-[10px]" :
       "w-full min-h-[100vh] flex flex-col bg-[var(--bg)] gap-[20px] p-[10px]"}`}>
 
       {!mwidth && !prevChatUsers?.length ? (<TrendingPostLoop tp={true} />) : (
         <>
-          {!m && <div className={`w-full lg:w-[25%] h-[80px] fixed top-0 ${mwidth ? "right-[50%]" : "right-0"}  z-50 flex items-center justify-between px-4 bg-[var(--bg)]`}>
+          {!m && <div className={`w-full lg:w-[25%] h-[80px] fixed top-0 ${mwidth ? "right-[50%]" : "right-0"} 
+           z-50 flex items-center justify-between px-4 bg-[var(--bg)]`}>
 
             <MdOutlineKeyboardBackspace
               onClick={() => navigate(`/`)}
@@ -39,10 +40,10 @@ function Messages({ mwidth, m }) {
             </h1>
 
             {!mwidth && <div
-              onClick={() => navigate(`/threads`)}
+             
               className="hidden lg:flex w-[25%] justify-end text-[30px] font-bold text-gray-400 gap-1 select-none"
             >
-              {["T", "H", "R", "E", "A", "D"].map((l, i) => (
+              {["Y", "I", "B", "E", "L", "Y"].map((l, i) => (
                 <span
                   key={i}
                   className="transition-all duration-300 hover:text-cyan-400 hover:scale-125 hover:-translate-y-1 hover:drop-shadow-[0_0_10px_#0ff] active:scale-95"

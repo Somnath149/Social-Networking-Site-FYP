@@ -10,6 +10,7 @@ import { BiMessageAltDetail } from "react-icons/bi";
 import { useNavigate } from 'react-router-dom';
 import PostList from '../pages/PostList';
 import WeeklyKing from './WeeklyKing';
+import PsyIncLogo from '../../public/PsyIncLogo';
 function Feed({ theme }) {
 
   const { postData } = useSelector(state => state.post)
@@ -24,14 +25,16 @@ function Feed({ theme }) {
 
   return (
     <div className={`lg:w-[50%] w-full h-full bg-[var(--bg)] h-screen ${!theme ? "overflow-y-scroll" : ""} `}
-    
+
     >
 
-<WeeklyKing  king={king}/>
+      <WeeklyKing king={king} />
 
       <div className='w-[full] h-[100px] flex items-center justify-between p-[20px] lg:hidden'>
 
-        <img src={logo} alt="" className='w-[40px]' />
+        <div  className='text-[40px] font-bold text-gray-400'>
+                            <PsyIncLogo />
+                        </div>
 
         <div className='flex items-center gap-[10px]'>
           <div className='relative' onClick={() => navigate("/notifications")}>
@@ -58,25 +61,48 @@ function Feed({ theme }) {
 
         {!activeIndex && !theme && <Nav />}
 
-        <div className='flex justify-around gap-25'>
-          <div className={` cursor-dot1 text-xl font-bold text-[var(--text)] cursor-pointer mb-3 
-          ${showFeed ? "border-b-4 border-[var(--secondary)]" : ""} `}
-            onClick={() => {
-              setShowFeed(true)
-              setShowExplore(false)
-            }}>Feed</div>
+        <div className="relative flex justify-center gap-12 border-b border-gray-700 mb-4">
 
-          <div className={` cursor-dot1 text-xl font-bold text-[var(--text)] cursor-pointer mb-3
-           ${showExplore ? "border-b-4 border-[var(--secondary)]" : ""} `}
+          {/* Active underline */}
+          <span
+            className={`absolute bottom-0 h-[3px] w-20 bg-[var(--secondary)] rounded-full
+    transition-all duration-300 ease-in-out
+    ${showFeed ? "left-[calc(50%-6.5rem)]" : "left-[calc(50%+1.5rem)]"}`}
+          />
+
+          {/* Feed */}
+          <button
+            className={`cursor-dot1 text-xl font-semibold px-4 pb-3 active:scale-95 transition-all duration-300
+      ${showFeed
+                ? "text-[var(--secondary)]"
+                : "text-[var(--text)] opacity-60 hover:opacity-100"
+              }`}
             onClick={() => {
-              setShowExplore(true)
-              setShowFeed(false)
+              setShowFeed(true);
+              setShowExplore(false);
             }}
-            onDoubleClick={
-              ()=> setActiveIndex(null)
-            }
-            >Explore</div>
+          >
+            Feed
+          </button>
+
+          {/* Explore */}
+          <button
+            className={`cursor-dot1 text-xl font-semibold px-4 pb-3 active:scale-95 transition-all duration-300
+      ${showExplore
+                ? "text-[var(--secondary)]"
+                : "text-[var(--text)] opacity-60 hover:opacity-100"
+              }`}
+            onClick={() => {
+              setShowExplore(true);
+              setShowFeed(false);
+            }}
+            onDoubleClick={() => setActiveIndex(null)}
+          >
+            Explore
+          </button>
+
         </div>
+
 
         {showFeed &&
           <>

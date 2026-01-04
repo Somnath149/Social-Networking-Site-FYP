@@ -84,7 +84,7 @@ function EditProfile() {
                 <h1 className='text-[var(--text)] text-[20px] font-semibold'>Edit Profile</h1>
             </div>
 
-            <div onClick={() => imageInput.current.click()} className='w-[80px] h-[80px] md:w-[140px] md:h-[140px] border-2 border-black rounded-full cursor-pointer overflow-hidden'>
+            <div onClick={() => imageInput.current.click()} className='w-[80px] h-[80px] mt-20 md:w-[140px] md:h-[140px] border-2 border-black rounded-full cursor-pointer overflow-hidden'>
                 <input type="file" accept='image/*' ref={imageInput} hidden onChange={handleImage} />
                 <img src={frontendImage} alt="" className='w-full object-cover' />
             </div>
@@ -107,7 +107,7 @@ function EditProfile() {
                 value={profession} placeholder='Enter Your Profession' />
 
 
-            <div className="px-[10px] min-w-[150px] py-[5px] h-940px] bg-[white]  cursor-pointer rounded-2xl">
+            <div className="px-[10px]  min-w-[150px] py-[5px] h-940px] bg-[white]  cursor-pointer rounded-2xl">
                 <button
                     type="button"
                     disabled={loading}

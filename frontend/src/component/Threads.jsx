@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useMemo, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux';
 import UploadThread from './UploadThread';
 import { addComment, addQuoteThread, addRetweet, setThreads, updateLikes } from '../redux/threadSlice';
@@ -6,22 +6,17 @@ import { FaHeart, FaRegComment, FaRegHeart, FaRocket, FaStar, FaTrash } from 're
 import axios from 'axios';
 import { serverUrl } from '../App';
 import { useState } from 'react';
-import Comment from './Comment';
 import { useNavigate } from 'react-router-dom';
 import ThreadPreview from './ThreadPreview';
-import { FiMoreVertical, FiStar, FiTarget } from 'react-icons/fi';
+import { FiMoreVertical } from 'react-icons/fi';
 import { RiHome7Fill, RiMessage2Line, RiPulseLine, RiUser3Line } from 'react-icons/ri';
-import { IoNotificationsOutline, IoSearchOutline } from 'react-icons/io5';
-
-import { BiMessageAltDetail } from 'react-icons/bi';
+import { IoSearchOutline } from 'react-icons/io5';
 import ThreadTitle from '../../public/ThreadTitle';
-import { MdAutoAwesome, MdStar } from 'react-icons/md';
-import { LuDiamond, LuSparkles, LuTrendingUp } from 'react-icons/lu';
-import OtherUsers from './OtherUsers';
-import ForYou from '../pages/ForYou';
+import { MdAutoAwesome } from 'react-icons/md';
 import TrendingPostLoop from './TrendingPostLoop';
+import { div } from 'framer-motion/client';
 
-function Threads({ mythreads, mythreadTailwind, HashTailwind, externalThreads }) {
+function Threads({ mythreads, mythreadTailwind, HashTailwind, externalThreads, followuser }) {
 
     const { threads } = useSelector((state) => state.thread);
     const { userData } = useSelector(state => state.user);
@@ -32,9 +27,27 @@ function Threads({ mythreads, mythreadTailwind, HashTailwind, externalThreads })
     const [previewThread, setPreviewThread] = useState(null);
     const [showDelete, setShowDelete] = useState(false)
     const [showTrends, setShowTrends] = useState(false)
-    const [showForYou, setShowForYou] = useState(false)
+    const [isPlaying, setIsPlaying] = useState(true)
+    const [isMuted, setIsMuted] = useState(true)
+    const [isLoading, setIsLoading] = useState(true);
+    const videoRef = useRef()
     const navigate = useNavigate()
     const dispatch = useDispatch();
+
+    const formatTimeAgo = (date) => {
+        const seconds = Math.floor((Date.now() - new Date(date)) / 1000);
+
+        if (seconds < 60) return "Just now";
+        if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+        if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+        if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`;
+
+        return new Date(date).toLocaleDateString("en-IN", {
+            day: "numeric",
+            month: "short",
+            year: "numeric",
+        });
+    };
 
     const handleLike = async (threadId) => {
         try {
@@ -132,20 +145,32 @@ function Threads({ mythreads, mythreadTailwind, HashTailwind, externalThreads })
     }, [socket, dispatch]);
 
 
-    const filteredThreads = externalThreads
-        ? externalThreads.map(thread => threads.find(t => t._id === thread._id) || thread)
-        : threads.filter(thread => mythreads ? thread.author._id === mythreads : true);
-
-
     // const filteredThreads = externalThreads
-    //     ? externalThreads.map(thread => {
-    //         // Agar Redux me update hua thread hai to merge karo
-    //         const reduxThread = threads.find(t => t._id === thread._id);
-    //         return reduxThread ? reduxThread : thread;
-    //     })
-    //     : threads.filter(thread =>
-    //         mythreads ? thread.author._id === mythreads : true
-    //     );
+    //     ? externalThreads.map(thread => threads.find(t => t._id === thread._id) || thread)
+    //     : threads.filter(thread => mythreads ? thread.author._id === mythreads : true);
+
+    // const filteredThreads = useMemo(() => {
+    //     if (externalThreads) {
+    //         return externalThreads.map(thread => threads.find(t => t._id === thread._id) || thread);
+    //     }
+    //     return threads.filter(thread => mythreads ? thread.author._id === mythreads : true);
+    // }, [threads, externalThreads, mythreads]);
+
+    const filteredThreads = useMemo(() => {
+        if (externalThreads) {
+            return externalThreads.map(thread => {
+                const reduxThread = threads.find(t => t._id === thread._id);
+                return reduxThread
+                    ? { ...thread, ...reduxThread }
+                    : thread;
+            });
+        }
+
+        return threads.filter(thread =>
+            mythreads ? thread.author._id === mythreads : true
+        );
+    }, [threads, externalThreads, mythreads]);
+
 
     const handleDeleteThread = async (threadId) => {
         try {
@@ -162,10 +187,21 @@ function Threads({ mythreads, mythreadTailwind, HashTailwind, externalThreads })
         }
     };
 
+    const handleClick = () => {
+        if (isPlaying) {
+            videoRef.current.pause()
+            setIsPlaying(false)
+        } else {
+            videoRef.current.play()
+            setIsPlaying(true)
+        }
+    }
 
     return (
         <div className={`w-full ${!HashTailwind && !mythreadTailwind ? "h-screen overflow-y-scroll bg-[var(--primary)]" : ""} 
     flex flex-col items-center pb-20`}>
+
+
 
             {showTrends ? <TrendingPostLoop setShowTrends={setShowTrends} /> :
                 <>
@@ -182,15 +218,11 @@ function Threads({ mythreads, mythreadTailwind, HashTailwind, externalThreads })
                         </div>
                     }
 
-                    {!mythreadTailwind && !HashTailwind && <UploadThread />}
-{
-    mythreadTailwind && <h1 className="text-black text-xl font-bold mb-4">
-                        {mythreads === userData._id ? "Your Threads" : "Threads"}
-                    </h1>
-}
+                    {!mythreadTailwind && !HashTailwind && !followuser && <UploadThread />}
                     
 
-                    <div className="mt-4 w-full flex flex-col items-center gap-4">
+
+                    <div className="mt-10 w-full flex flex-col  items-center gap-4">
 
                         {filteredThreads.length === 0 ? (
                             <p className="text-gray-400 text-center mt-10 mb-20">
@@ -202,52 +234,88 @@ function Threads({ mythreads, mythreadTailwind, HashTailwind, externalThreads })
                                     onClick={() => setPreviewThread(thread)}
                                     key={thread._id}
                                     className="w-[95%] sm:w-[90%] md:w-[80%] lg:w-[60%] hover:scale-101 bg-[var(--bg)] text-[var(--text)] rounded-2xl
-                        shadow-lg border border-gray-700 p-5 flex flex-col sm:flex-row gap-4"
+                        shadow-lg border border-gray-700 p-5  sm:flex-row gap-4"
                                 >
 
-                                    {/* Profile */}
-                                    <img
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            navigate(`/profile/${thread.author?.userName}`)
-                                        }}
-                                        src={thread.author?.profileImage}
-                                        alt="profile"
-                                        className="w-12 h-12 sm:w-14 sm:h-14 rounded-full object-cover  cursor-dot1 border border-gray-600"
-                                    />
+                                    <div className='flex flex-col'>
+                                        <div>
+                                            {/* RETWEETED BY */}
+                                            {thread.retweetedBy && (
+                                                <div className="text-xs text-green-400 mb-1 flex items-center gap-1">
+                                                    🔁 Retweeted by
+                                                    <span
+                                                        className="font-semibold cursor-dot1 hover:underline"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            navigate(`/profile/${thread.retweetedBy.userName}`);
+                                                        }}
+                                                    >
+                                                        @{thread.retweetedBy.userName}
+                                                    </span>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        <div className='flex justify-between items-center'>
+                                            {/* Profile */}
+                                            <div className='flex gap-2'>
+                                                <img
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        navigate(`/profile/${thread.author?.userName}`)
+                                                    }}
+                                                    src={thread.author?.profileImage}
+                                                    alt="profile"
+                                                    className="w-12 h-12 sm:w-14 sm:h-14 rounded-full object-cover  cursor-dot1 border border-gray-600"
+                                                />
+                                                <div className='flex flex-col'>
+                                                    <h3 className="font-semibold text-sm sm:text-base">
+                                                        {thread.author?.name}
+                                                        <span className="text-xs sm:text-sm text-gray-400 ml-2">@{thread.author?.userName}</span>
+                                                    </h3>
+                                                    <span className="text-xs text-gray-400">
+                                                        {formatTimeAgo(thread?.createdAt)}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <div className=''>
+                                                {mythreads && thread.author?._id === userData._id && (
+                                                    <span className=''>
+                                                        <FiMoreVertical
+                                                            className="text-[var(--text)] w-6 h-6  cursor-dot1 rounded-full
+                                                     hover:bg-[var(--text)]/60 p-1"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                setShowDelete(prev => !prev)
+                                                            }}
+                                                        />
+
+                                                        {
+                                                            showDelete && <div className="absolute mt-2 bg-[var(--secondary)]
+                                                         border border-gray-700 rounded-xl shadow-lg px-3 py-2 z-20"
+                                                                onClick={(e) => e.stopPropagation()}>
+                                                                <button
+                                                                    onClick={(e) => { e.stopPropagation(); handleDeleteThread(thread._id); }}
+                                                                    className="px-3 py-1 text-sm text-red-500 border
+                                                                 border-red-500 rounded-xl flex items-center gap-1"
+                                                                >
+                                                                    <FaTrash className="w-4 h-4" /> Delete
+                                                                </button>
+                                                            </div>
+                                                        }
+
+
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+
 
                                     {/* Content */}
                                     <div className="flex-1 flex flex-col gap-2">
 
-                                        <div className='flex justify-between items-start'>
-                                            <h3 className="font-semibold text-sm sm:text-base">
-                                                {thread.author?.name}
-                                                <span className="text-xs sm:text-sm text-gray-400 ml-2">@{thread.author?.userName}</span>
-                                            </h3>
 
-                                            <span className='relative'>
-                                                <FiMoreVertical
-                                                    className="text-[var(--text)] w-6 h-6  cursor-dot1 rounded-full
-                                                     hover:bg-gray-300 p-1"
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        setShowDelete(prev => !prev)
-                                                    }}
-                                                />
-
-                                                {showDelete && thread.author?._id === userData._id && (
-                                                    <div className="absolute right-0 mt-2 bg-[var(--secondary)] border border-gray-700 rounded-xl shadow-lg px-3 py-2 z-20"
-                                                        onClick={(e) => e.stopPropagation()}>
-                                                        <button
-                                                            onClick={(e) => { e.stopPropagation(); handleDeleteThread(thread._id); }}
-                                                            className="px-3 py-1 text-sm text-red-500 border border-red-500 rounded-xl flex items-center gap-1"
-                                                        >
-                                                            <FaTrash className="w-4 h-4" /> Delete
-                                                        </button>
-                                                    </div>
-                                                )}
-                                            </span>
-                                        </div>
 
                                         <p className="text-[var(--text)] text-sm sm:text-base">{thread.caption || thread.content}</p>
 
@@ -256,17 +324,39 @@ function Threads({ mythreads, mythreadTailwind, HashTailwind, externalThreads })
                                             <img
                                                 key={i}
                                                 src={img}
-                                                className="rounded-xl mt-3 w-full sm:max-w-full h-auto object-cover border border-gray-600"
+                                                className="
+    mt-3
+    w-full
+    max-h-[420px]
+    object-cover
+    rounded-xl
+    border border-gray-700
+    bg-black
+  "
                                             />
+
                                         ))}
 
                                         {/* VIDEO */}
                                         {thread.mediaType === "video" && thread.video && (
-                                            <video
-                                                src={thread.video}
-                                                controls
-                                                className="w-full sm:max-w-full h-auto rounded-xl mt-3 border border-gray-600"
-                                            />
+                                            <div>
+                                                <video
+                                                    src={thread.video}
+                                                    playsInline
+
+                                                    preload="metadata"
+                                                    className="
+    mt-3
+    w-full
+    max-h-[450px]
+    object-cover
+    rounded-xl
+    border border-gray-700
+    bg-black
+  "
+                                                />
+
+                                            </div>
                                         )}
 
                                         {/* QUOTED THREAD */}
@@ -289,8 +379,15 @@ function Threads({ mythreads, mythreadTailwind, HashTailwind, externalThreads })
                                                 {thread.quoteThread.mediaType === "video" && thread.quoteThread.video && (
                                                     <video
                                                         src={thread.quoteThread.video}
-                                                        controls
-                                                        className="w-full sm:max-w-full h-auto rounded-xl mt-3 border border-gray-600"
+                                                        className="
+    mt-3
+    w-full
+    max-h-[450px]
+    object-cover
+    rounded-xl
+    border border-gray-700
+    bg-black
+  "
                                                     />
                                                 )}
                                             </div>
@@ -416,6 +513,8 @@ function Threads({ mythreads, mythreadTailwind, HashTailwind, externalThreads })
                     onClose={() => setPreviewThread(null)}
                 />
             )}
+
+
         </div>
 
     );

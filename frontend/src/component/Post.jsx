@@ -31,7 +31,7 @@ function Post({ post, disableProfileClick, Ssrc, onPostClick, ExploreTailwind, a
     const [message, setMessage] = useState("")
     const [showDelete, setShowDelete] = useState(false)
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-
+    const [showFullCaption, setShowFullCaption] = useState(false);
     const navigate = useNavigate()
 
     const formatTimeAgo = (date) => {
@@ -221,7 +221,7 @@ function Post({ post, disableProfileClick, Ssrc, onPostClick, ExploreTailwind, a
         <div className={`
     ${ExploreTailwind
                 ? "w-full mb-2 break-inside-avoid bg-[var(--secondary)] rounded-2xl "        // Masonry ke liye
-                : "w-[90%] max-w-[500px] items-center   shadow-[#00000030] bg-[var(--bg)] shadow-lg min-h-[450px] pb-[20px] flex flex-col rounded-2xl"
+                : "w-[90%] max-w-[500px] items-center  relative shadow-[#00000030] bg-[var(--bg)] shadow-lg min-h-[450px] pb-[20px] flex flex-col rounded-2xl"
             }
   `}>
 
@@ -398,21 +398,44 @@ function Post({ post, disableProfileClick, Ssrc, onPostClick, ExploreTailwind, a
                     )
                 }
 
-                {post.caption && <div className={`w-full px-[20px] gap-[10px] flex justify-start items-center
-                                 ${active ? "text-[var(--text)]" : "text-[var(--text)]"} `}>
-                    <div className="flex flex-col">
-                        <span className="font-semibold text-[var(--text)] truncate">
-                            {post.author.userName}
-                        </span>
-                        <span className="text-xs text-gray-400">
-                            {formatTimeAgo(post.createdAt)}
-                        </span>
-                    </div>
 
-                    <span className="flex flex-wrap">
-                        {renderCaption(post.caption)}
-                    </span>
-                </div>}
+
+
+                <div className="w-full px-[20px] mt-2 text-[var(--text)]">
+                    <div className="flex flex-col gap-1 w-full">
+                        <div className="flex items-center gap-2">
+                            <span className="font-semibold truncate max-w-[60%]">
+                                {post.author.userName}
+                            </span>
+                            <span className="text-xs text-gray-400">
+                                {formatTimeAgo(post.createdAt)}
+                            </span>
+                        </div>
+                        {post.caption && (
+                            <p className="text-sm break-words w-full">
+                                {renderCaption(
+                                    showFullCaption
+                                        ? post.caption
+                                        : post.caption.length > 100
+                                            ? post.caption.slice(0, 100) + "..."
+                                            : post.caption
+                                )}
+
+                                {post.caption.length > 100 && (
+                                    <span
+                                        className="text-gray-400 ml-2 cursor-pointer"
+                                        onClick={() => setShowFullCaption(prev => !prev)}
+                                    >
+                                        {showFullCaption ? "Read less" : "Read more"}
+                                    </span>
+                                )}
+                            </p>
+                        )}
+                    </div>
+                </div>
+
+
+
 
                 {showComment &&
                     <div className='w-full text-[var(--text)] flex flex-col gap-[30px] pb-[20px]'>

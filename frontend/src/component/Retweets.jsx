@@ -11,8 +11,11 @@ function Retweets({ userId, mythreadTailwind }) {
     const { threads } = useSelector(state => state.thread);
     const dispatch = useDispatch();
     const navigate = useNavigate()
-   
-    const retweets = threads.filter(t => t.retweets.includes(userId));
+
+    const retweets = threads.filter(t =>
+        t.retweets.some(u => u._id === userId)
+    );
+
 
     useEffect(() => {
         const loadThreads = async () => {
@@ -77,27 +80,47 @@ function Retweets({ userId, mythreadTailwind }) {
             )}
 
             {retweets.map(thread => (
+
                 <div
                     key={thread._id}
-                    className="bg-white mt-3 mb-8 p-4 rounded-xl shadow flex gap-4"
+                    className="bg-white mt-3 mb-8 p-4 rounded-xl shadow flex flex-col gap-4"
                 >
+
+
                     {/* Profile Image */}
-                    <img
-                        src={thread.author.profileImage}
-                        onClick={() => navigate(`/profile/${thread.author?.userName}`)}
-                        className="w-12 h-12 rounded-full object-cover border"
-                        alt="profile"
-                    />
+                    <div className="flex flex-col">
+                        <div className="flex items-center gap-1 text-xs text-gray-500 italic mb-2">
+                            Retweeted by
+                            {thread.retweets.slice(0, 3).map(u => (
+                                <img
+                                    key={u._id}
+                                    src={u.profileImage}
+                                    alt={u.userName}
+                                    className="w-4 h-4 rounded-full border ml-1"
+                                    title={u.userName}
+                                />
+                            ))}
+                            {thread.retweets.length > 3 && ` +${thread.retweets.length - 3} more`}
+                        </div>
+
+                        <div className="flex">
+                            <img
+                                src={thread.author.profileImage}
+                                onClick={() => navigate(`/profile/${thread.author?.userName}`)}
+                                className="w-12 h-12 rounded-full object-cover border"
+                                alt="profile"
+                            />
+                            <h1 className="font-semibold px-2 flex gap-2 items-center">
+                                {thread.author.name}{" "}
+                                <span className="text-sm text-gray-500">
+                                    @{thread.author.userName}
+                                </span>
+                            </h1>
+                        </div>
+                    </div>
+
 
                     <div className="w-full">
-
-                        {/* Author */}
-                        <h1 className="font-semibold">
-                            {thread.author.name}{" "}
-                            <span className="text-sm text-gray-500">
-                                @{thread.author.userName}
-                            </span>
-                        </h1>
 
                         {/* Caption */}
                         <p className="text-gray-900 text-sm mt-1">
