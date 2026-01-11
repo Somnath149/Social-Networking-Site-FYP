@@ -24,10 +24,7 @@ function useFollowPost() {
         }
     };
 
-    fetchThreads(); // initial
-    // // const interval = setInterval(fetchThreads, 10000); // every 10 sec
-
-    // return () => clearInterval(interval);
+    fetchThreads(); 
 }, [userData?._id, dispatch]);
 
 }

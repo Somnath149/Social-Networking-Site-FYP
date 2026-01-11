@@ -2,6 +2,8 @@ import React, { useRef, useState } from "react";
 import { FaTimes } from "react-icons/fa";
 import { FiVolume2, FiVolumeX } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
+import { setPreview } from "../redux/threadSlice";
+import { useDispatch } from "react-redux";
 
 function ThreadPreview({ thread, onClose }) {
     if (!thread) return null;
@@ -9,6 +11,7 @@ function ThreadPreview({ thread, onClose }) {
     const [isLoading, setIsLoading] = useState(true);
     const [isPlaying, setIsPlaying] = useState(true)
     const [isMuted, setIsMuted] = useState(true)
+    const dispatch = useDispatch()
     const videoRef = useRef()
     const navigate = useNavigate();
     const handleClick = () => {
@@ -20,6 +23,31 @@ function ThreadPreview({ thread, onClose }) {
             setIsPlaying(true)
         }
     }
+
+const renderCaption = (text) => {
+        return text.split(" ").map((word, index) => {
+            if (word.startsWith("#")) {
+                return (
+                    <span
+                        key={index}
+                        className="text-blue-500 cursor-pointer hover:underline mr-1"
+                        onClick={() =>{ navigate(`/plhashtag/${word.substring(1)}`)
+                    dispatch(setPreview(null))
+                    }}
+                    >
+                        {word}
+                    </span>
+                );
+            }
+            
+            return (
+                <span key={index} className="mr-1">
+                    {word}
+                </span>
+            );
+        });
+    };
+
     return (
         <div className="fixed inset-0 bg-[var(--bg)] bg-opacity-70 flex justify-center items-center z-50 p-4">
             <div className="w-full max-w-3xl bg-[var(--primary)] text-[var(--text)] text-[var(--text1)] rounded-2xl p-5 relative border border-[var(--secondary)] overflow-y-auto max-h-[90vh]">
@@ -46,7 +74,8 @@ function ThreadPreview({ thread, onClose }) {
                 </div>
 
                 <p className="mt-2 text-base md:text-lg whitespace-pre-wrap text-[var(--text)] leading-relaxed">
-                    {thread.caption || thread.content}
+                    {renderCaption(thread.caption || thread.content)}
+                    
                 </p>
 
                 {thread.images?.length > 0 && (
@@ -64,9 +93,9 @@ function ThreadPreview({ thread, onClose }) {
                 {thread.mediaType === "video" && thread.video && (
                     <div>
                         <div className='absolute top-35 z-[100] right-70' onClick={() => setIsMuted(prev => !prev)}>
-                                {!isMuted ? <FiVolume2 className='w-[20px] h-[20px] cursor-pointer  text-white font-semibold' /> :
-                                  <FiVolumeX className='w-[20px] h-[20px] cursor-pointer  text-white font-semibold' />}
-                              </div>
+                            {!isMuted ? <FiVolume2 className='w-[20px] h-[20px] cursor-pointer  text-white font-semibold' /> :
+                                <FiVolumeX className='w-[20px] h-[20px] cursor-pointer  text-white font-semibold' />}
+                        </div>
                         <video
                             src={thread.video}
                             ref={videoRef}
@@ -117,10 +146,10 @@ function ThreadPreview({ thread, onClose }) {
 
                         {thread.quoteThread.mediaType === "video" && thread.quoteThread.video && (
                             <div>
-                                <div className='absolute top-[20px] z-[100] right-[20px]' onClick={() => setIsMuted(prev => !prev)}>
-                                        {!isMuted ? <FiVolume2 className='w-[20px] h-[20px] cursor-pointer  text-white font-semibold' /> :
-                                          <FiVolumeX className='w-[20px] h-[20px] cursor-pointer  text-white font-semibold' />}
-                                      </div>
+                                <div className='absolute top-53 z-[100] right-76' onClick={() => setIsMuted(prev => !prev)}>
+                            {!isMuted ? <FiVolume2 className='w-[20px] h-[20px] cursor-pointer  text-white font-semibold' /> :
+                                <FiVolumeX className='w-[20px] h-[20px] cursor-pointer  text-white font-semibold' />}
+                        </div>
                                 <video
                                     src={thread.quoteThread.video}
                                     ref={videoRef}
@@ -128,6 +157,7 @@ function ThreadPreview({ thread, onClose }) {
                                     playsInline
                                     autoPlay
                                     loop
+                                    muted = {isMuted}
                                     onLoadStart={() => setIsLoading(true)}
                                     onLoadedData={() => setIsLoading(false)}
                                     onCanPlay={() => setIsLoading(false)}

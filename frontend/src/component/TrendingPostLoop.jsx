@@ -1,5 +1,4 @@
 import React from 'react'
-import Search from '../pages/Search';
 import { FiSearch } from 'react-icons/fi';
 import { useState } from 'react';
 import { setAllTrending, setTodayTrending } from '../redux/postSlice';
@@ -38,13 +37,11 @@ function TrendingPostLoop({ tp, show }) {
     useEffect(() => {
         const search = input.trim().toLowerCase();
 
-        // Today filtering
         const ft = todayTrending.filter(t =>
             (t.tag || t._id).toLowerCase().includes(search)
         );
         setFilteredToday(ft);
 
-        // All time filtering
         const fa = allTrending.filter(t =>
             (t.tag || t._id).toLowerCase().includes(search)
         );
@@ -242,7 +239,7 @@ function TrendingPostLoop({ tp, show }) {
                                 </div>
                             ))}
 
-                            {allLimit < filteredAll.length && (
+                            {!showToday && filteredAll.length > 0   && allLimit < filteredAll.length && (
                                 <button onClick={() => setAllLimit(allLimit + 10)} className="text-[var(--text)] font-bold">
                                     Show more
                                 </button>

@@ -8,6 +8,7 @@ function getAllLoops() {
     const dispatch= useDispatch()
     const {userData} = useSelector(state=>state.user)
     useEffect(()=>{
+        if (!userData?._id) return;
         const fetchloops= async () => {
             try {
                 const result= await axios.get(`${serverUrl}/api/loop/getAll`,{withCredentials:true})

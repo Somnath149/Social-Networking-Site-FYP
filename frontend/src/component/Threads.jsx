@@ -1,20 +1,22 @@
 import React, { useEffect, useMemo, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux';
 import UploadThread from './UploadThread';
-import { addComment, addQuoteThread, addRetweet, setThreads, updateLikes } from '../redux/threadSlice';
+import { addComment, addQuoteThread, addRetweet, setPreview, setThreads, updateLikes, updateVerdict } from '../redux/threadSlice';
 import { FaHeart, FaRegComment, FaRegHeart, FaRocket, FaStar, FaTrash } from 'react-icons/fa6';
 import axios from 'axios';
 import { serverUrl } from '../App';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ThreadPreview from './ThreadPreview';
-import { FiMoreVertical } from 'react-icons/fi';
+import { FiMoreVertical, FiRefreshCw } from 'react-icons/fi';
 import { RiHome7Fill, RiMessage2Line, RiPulseLine, RiUser3Line } from 'react-icons/ri';
 import { IoSearchOutline } from 'react-icons/io5';
 import ThreadTitle from '../../public/ThreadTitle';
 import { MdAutoAwesome } from 'react-icons/md';
 import TrendingPostLoop from './TrendingPostLoop';
 import { div } from 'framer-motion/client';
+import { toast } from 'react-toastify';
+import renderCaption from '../hooks/useRenderCaption';
 
 function Threads({ mythreads, mythreadTailwind, HashTailwind, externalThreads, followuser }) {
 
@@ -25,11 +27,9 @@ function Threads({ mythreads, mythreadTailwind, HashTailwind, externalThreads, f
     const [quoteContent, setQuoteContent] = useState({});
     const [isQuoting, setIsQuoting] = useState({});
     const [previewThread, setPreviewThread] = useState(null);
-    const [showDelete, setShowDelete] = useState(false)
+    const [showDelete, setShowDelete] = useState({})
     const [showTrends, setShowTrends] = useState(false)
     const [isPlaying, setIsPlaying] = useState(true)
-    const [isMuted, setIsMuted] = useState(true)
-    const [isLoading, setIsLoading] = useState(true);
     const videoRef = useRef()
     const navigate = useNavigate()
     const dispatch = useDispatch();
@@ -82,7 +82,12 @@ function Threads({ mythreads, mythreadTailwind, HashTailwind, externalThreads, f
         }
     };
 
-    const handleRetweet = async (threadId) => {
+    const handleRetweet = async (threadId,thread) => {
+        if (thread?.verdict === "FALSE") return(
+         toast.warning("This thread contain misleading information can't retweet", {
+  containerId: "warningTop"
+}))
+
         try {
             const res = await axios.post(
                 `${serverUrl}/api/thread/retweet/${threadId}`,
@@ -103,6 +108,7 @@ function Threads({ mythreads, mythreadTailwind, HashTailwind, externalThreads, f
     };
 
     const handleQuote = async (threadId) => {
+
         try {
             const message = quoteContent[threadId] || "";
             const res = await axios.post(
@@ -144,18 +150,6 @@ function Threads({ mythreads, mythreadTailwind, HashTailwind, externalThreads, f
         };
     }, [socket, dispatch]);
 
-
-    // const filteredThreads = externalThreads
-    //     ? externalThreads.map(thread => threads.find(t => t._id === thread._id) || thread)
-    //     : threads.filter(thread => mythreads ? thread.author._id === mythreads : true);
-
-    // const filteredThreads = useMemo(() => {
-    //     if (externalThreads) {
-    //         return externalThreads.map(thread => threads.find(t => t._id === thread._id) || thread);
-    //     }
-    //     return threads.filter(thread => mythreads ? thread.author._id === mythreads : true);
-    // }, [threads, externalThreads, mythreads]);
-
     const filteredThreads = useMemo(() => {
         if (externalThreads) {
             return externalThreads.map(thread => {
@@ -187,6 +181,15 @@ function Threads({ mythreads, mythreadTailwind, HashTailwind, externalThreads, f
         }
     };
 
+    const toggleDeleteMenu = (threadId, e) => {
+        e.stopPropagation();
+        setShowDelete(prev => ({
+            ...prev,
+            [threadId]: !prev[threadId]
+        }));
+    };
+
+
     const handleClick = () => {
         if (isPlaying) {
             videoRef.current.pause()
@@ -197,11 +200,39 @@ function Threads({ mythreads, mythreadTailwind, HashTailwind, externalThreads, f
         }
     }
 
+    const VerdictBadge = ({ verdict }) => {
+        if (!verdict) return null;
+
+        if (verdict === "FALSE") {
+            return (
+                <span className="text-xs text-red-500 flex items-center gap-1">
+                    ❌ Incorrect information
+                </span>
+            );
+        }
+
+        return null;
+    };
+
+    useEffect(() => {
+        if (!socket) return;
+
+        const handleFactCheck = (thread) => {
+            dispatch(updateVerdict(thread));
+        };
+
+        socket.on("factCheckUpdate", handleFactCheck);
+
+        return () => {
+            socket.off("factCheckUpdate", handleFactCheck);
+        };
+    }, [socket, dispatch]);
+
+
+
     return (
         <div className={`w-full ${!HashTailwind && !mythreadTailwind ? "h-screen overflow-y-scroll bg-[var(--primary)]" : ""} 
     flex flex-col items-center pb-20`}>
-
-
 
             {showTrends ? <TrendingPostLoop setShowTrends={setShowTrends} /> :
                 <>
@@ -219,7 +250,7 @@ function Threads({ mythreads, mythreadTailwind, HashTailwind, externalThreads, f
                     }
 
                     {!mythreadTailwind && !HashTailwind && !followuser && <UploadThread />}
-                    
+
 
 
                     <div className="mt-10 w-full flex flex-col  items-center gap-4">
@@ -231,7 +262,11 @@ function Threads({ mythreads, mythreadTailwind, HashTailwind, externalThreads, f
                         ) : (
                             filteredThreads.map((thread) => (
                                 <div
-                                    onClick={() => setPreviewThread(thread)}
+                                    onClick={() => {
+                                        setPreviewThread(thread)
+                                        dispatch(setPreview(thread))
+                                    }
+                                    }
                                     key={thread._id}
                                     className="w-[95%] sm:w-[90%] md:w-[80%] lg:w-[60%] hover:scale-101 bg-[var(--bg)] text-[var(--text)] rounded-2xl
                         shadow-lg border border-gray-700 p-5  sm:flex-row gap-4"
@@ -239,10 +274,9 @@ function Threads({ mythreads, mythreadTailwind, HashTailwind, externalThreads, f
 
                                     <div className='flex flex-col'>
                                         <div>
-                                            {/* RETWEETED BY */}
                                             {thread.retweetedBy && (
                                                 <div className="text-xs text-green-400 mb-1 flex items-center gap-1">
-                                                    🔁 Retweeted by
+                                                    <FiRefreshCw /> Retweeted by
                                                     <span
                                                         className="font-semibold cursor-dot1 hover:underline"
                                                         onClick={(e) => {
@@ -257,7 +291,7 @@ function Threads({ mythreads, mythreadTailwind, HashTailwind, externalThreads, f
                                         </div>
 
                                         <div className='flex justify-between items-center'>
-                                            {/* Profile */}
+
                                             <div className='flex gap-2'>
                                                 <img
                                                     onClick={(e) => {
@@ -276,34 +310,36 @@ function Threads({ mythreads, mythreadTailwind, HashTailwind, externalThreads, f
                                                     <span className="text-xs text-gray-400">
                                                         {formatTimeAgo(thread?.createdAt)}
                                                     </span>
+                                                    <VerdictBadge verdict={thread?.verdict} />
+
                                                 </div>
                                             </div>
-                                            <div className=''>
+                                            <div>
                                                 {mythreads && thread.author?._id === userData._id && (
-                                                    <span className=''>
+                                                    <span>
                                                         <FiMoreVertical
-                                                            className="text-[var(--text)] w-6 h-6  cursor-dot1 rounded-full
-                                                     hover:bg-[var(--text)]/60 p-1"
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                setShowDelete(prev => !prev)
-                                                            }}
+                                                            className="text-[var(--text)] w-6 h-6  cursor-dot1 rounded-full hover:bg-[var(--text)]/60 p-1"
+                                                            onClick={(e) => toggleDeleteMenu(thread._id, e)}
                                                         />
 
-                                                        {
-                                                            showDelete && <div className="absolute mt-2 bg-[var(--secondary)]
-                                                         border border-gray-700 rounded-xl shadow-lg px-3 py-2 z-20"
-                                                                onClick={(e) => e.stopPropagation()}>
+                                                        {showDelete[thread._id] && (
+                                                            <div
+                                                                className="absolute mt-2 bg-[var(--primary)] border
+                                                                 border-gray-700 rounded-xl shadow-lg px-3 py-2 z-20"
+                                                                onClick={(e) => e.stopPropagation()}
+                                                            >
                                                                 <button
-                                                                    onClick={(e) => { e.stopPropagation(); handleDeleteThread(thread._id); }}
-                                                                    className="px-3 py-1 text-sm text-red-500 border
-                                                                 border-red-500 rounded-xl flex items-center gap-1"
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        handleDeleteThread(thread._id);
+                                                                    }}
+                                                                    className="px-3 py-1 text-sm text-red-500
+                                                                     rounded-xl flex items-center bold gap-1"
                                                                 >
                                                                     <FaTrash className="w-4 h-4" /> Delete
                                                                 </button>
                                                             </div>
-                                                        }
-
+                                                        )}
 
                                                     </span>
                                                 )}
@@ -311,15 +347,9 @@ function Threads({ mythreads, mythreadTailwind, HashTailwind, externalThreads, f
                                         </div>
                                     </div>
 
-
-                                    {/* Content */}
                                     <div className="flex-1 flex flex-col gap-2">
 
-
-
-                                        <p className="text-[var(--text)] text-sm sm:text-base">{thread.caption || thread.content}</p>
-
-                                        {/* IMAGES */}
+    <p className={` ${thread?.verdict === "FALSE" ? "text-red-500" : "text-[var(--text)]"} " text-sm sm:text-base"`}>{renderCaption(thread.caption || thread.content, navigate)}</p>
                                         {thread.images?.map((img, i) => (
                                             <img
                                                 key={i}
@@ -327,7 +357,6 @@ function Threads({ mythreads, mythreadTailwind, HashTailwind, externalThreads, f
                                                 className="
     mt-3
     w-full
-    max-h-[420px]
     object-cover
     rounded-xl
     border border-gray-700
@@ -337,7 +366,6 @@ function Threads({ mythreads, mythreadTailwind, HashTailwind, externalThreads, f
 
                                         ))}
 
-                                        {/* VIDEO */}
                                         {thread.mediaType === "video" && thread.video && (
                                             <div>
                                                 <video
@@ -359,7 +387,6 @@ function Threads({ mythreads, mythreadTailwind, HashTailwind, externalThreads, f
                                             </div>
                                         )}
 
-                                        {/* QUOTED THREAD */}
                                         {thread.quoteThread && (
                                             <div className="bg-[var(--primary)] brightness-105 p-3 rounded-xl mt-3 border border-gray-700">
                                                 <p className="text-sm font-semibold  cursor-dot1"
@@ -382,7 +409,7 @@ function Threads({ mythreads, mythreadTailwind, HashTailwind, externalThreads, f
                                                         className="
     mt-3
     w-full
-    max-h-[450px]
+     max-h-[450px]
     object-cover
     rounded-xl
     border border-gray-700
@@ -393,34 +420,37 @@ function Threads({ mythreads, mythreadTailwind, HashTailwind, externalThreads, f
                                             </div>
                                         )}
 
-                                        {/* ACTION BUTTONS */}
                                         <div className="flex flex-wrap gap-4 mt-3 text-[var(--text)] text-lg">
 
-                                            {/* LIKE */}
                                             <div className="flex items-center gap-2  cursor-dot1" onClick={(e) => { e.stopPropagation(); handleLike(thread._id) }}>
                                                 {!thread.likes?.includes(userData._id) ? <FaRegHeart className="hover:text-red-500" /> : <FaHeart className="text-red-600" />}
                                                 <span className="text-sm">{thread.likes?.length}</span>
                                             </div>
 
-                                            {/* COMMENT */}
                                             <div className="flex items-center gap-2  cursor-dot1">
                                                 <FaRegComment className="hover:text-blue-400" />
                                                 <span className="text-sm">{thread.comments?.length}</span>
                                             </div>
 
-                                            {/* RETWEET */}
-                                            <div className="flex items-center gap-2  cursor-dot1" onClick={(e) => { e.stopPropagation(); handleRetweet(thread._id) }}>
-                                                <span className={`${thread.isRetweeted ? "text-green-500" : "text-gray-300"}`}>🔁</span>
+                                            <div className="flex items-center gap-2  cursor-dot1"
+                                             onClick={(e) => {
+                                                
+                                                e.stopPropagation(); handleRetweet(thread._id, thread) }}>
+                                                
+                                                <span className={`${thread.isRetweeted ? "text-green-500" : "text-gray-300"}`}>
+                                                <FiRefreshCw
+  className="hover:rotate-180 transition-transform duration-300 active:animate-spin"
+/>
+
+ </span>
                                                 <span className="text-sm">{thread.retweetsCount}</span>
                                             </div>
 
-                                            {/* QUOTE */}
                                             <div className="flex items-center gap-2  cursor-dot1" onClick={(e) => { e.stopPropagation(); setIsQuoting(prev => ({ ...prev, [thread._id]: !prev[thread._id] })) }}>
                                                 ❝ <span className="text-sm">Quote</span>
                                             </div>
                                         </div>
 
-                                        {/* QUOTE INPUT */}
                                         {isQuoting[thread._id] && (
                                             <div className="mt-3">
                                                 <textarea
@@ -441,7 +471,6 @@ function Threads({ mythreads, mythreadTailwind, HashTailwind, externalThreads, f
                                             </div>
                                         )}
 
-                                        {/* COMMENTS */}
                                         <div className="mt-2">
                                             {thread.comments?.slice(0, 2).map((c) => (
                                                 <p key={c._id} className="text-sm text-[var(--text)] mt-1">
@@ -450,7 +479,6 @@ function Threads({ mythreads, mythreadTailwind, HashTailwind, externalThreads, f
                                             ))}
                                         </div>
 
-                                        {/* COMMENT INPUT */}
                                         <div className="flex gap-2 mt-3">
                                             <input
                                                 type="text"
@@ -469,12 +497,11 @@ function Threads({ mythreads, mythreadTailwind, HashTailwind, externalThreads, f
                                         </div>
 
                                     </div>
+
                                 </div>
                             )))
 
                         }
-
-                        {/* Nab Bar */}
 
                         <div className='
             w-[90%] lg:hidden h-[80px] flex justify-around items-center
@@ -497,9 +524,7 @@ function Threads({ mythreads, mythreadTailwind, HashTailwind, externalThreads, f
                                 <div className="flex text-[var(--text)] justify-start  cursor-dot1 gap-4">
                                     <RiMessage2Line className='text-[white] w-[25px] h-[25px]  cursor-dot1'
                                         onClick={() => navigate(`/messages`)} /></div>
-                                {/* <div className="flex text-[var(--text)] justify-start  cursor-dot1 gap-4">
-                                           <PiSparkleFill className='text-[white] w-[25px] h-[25px]  cursor-dot1'
-                                               onClick={() => navigate(`/threads`)} />Grok</div> */}
+
                                 <div className="flex  text-[var(--text)] justify-start  cursor-dot1 gap-4" onClick={() => navigate(`/profile/${userData.userName}`)}>
                                     <RiUser3Line className='text-[white] w-[25px] h-[25px]  cursor-dot1'
                                     /></div>
@@ -510,7 +535,10 @@ function Threads({ mythreads, mythreadTailwind, HashTailwind, externalThreads, f
             {previewThread && (
                 <ThreadPreview
                     thread={previewThread}
-                    onClose={() => setPreviewThread(null)}
+                    onClose={() => {
+                        setPreviewThread(null)
+                        dispatch(setPreview(null))
+                    }}
                 />
             )}
 

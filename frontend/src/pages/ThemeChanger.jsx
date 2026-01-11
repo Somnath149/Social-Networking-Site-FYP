@@ -1,10 +1,4 @@
 import React, { useEffect, useState } from "react";
-import ThreadHome from "./ThreadHome";
-import Home from "./Home";
-import LeftSide from "../component/LeftSide";
-import Feed from "../component/Feed";
-import RightSide from "../component/RightSide";
-
 
 const defaultThemes = [
   { name: "Default", class: "theme-default", colors: ["#ffffff", "#000000"] },
@@ -287,12 +281,10 @@ export default function ThemeChanger() {
   className="w-full h-[100vh] mt-4 p-4 sm:p-6 rounded-2xl shadow-lg 
   bg-[var(--bg)] text-[var(--text)] border border-[var(--primary)] overflow-y-auto"
 >
-  {/* Header Skeleton */}
   <div className="h-6 w-56 bg-[var(--text)] rounded-md mb-6 "></div>
 
   <div className="w-full flex flex-col lg:flex-row justify-center items-start gap-4">
     
-    {/* Left Sidebar Skeleton */}
     <div className="hidden lg:block w-[260px]  space-y-4 ">
       <div className="h-10 w-40 bg-[var(--text)] rounded"></div>
 
@@ -307,9 +299,8 @@ export default function ThemeChanger() {
       ))}
     </div>
 
-    {/* Feed Skeleton */}
     <div className="flex-1 max-w-xl w-full space-y-6 ">
-      {/* Story bar */}
+ 
       <div className="flex gap-3 overflow-hidden">
         {[1,2,3,4,5].map((i) => (
           <div
@@ -319,7 +310,6 @@ export default function ThemeChanger() {
         ))}
       </div>
 
-      {/* Post Skeleton */}
       <div className="bg-[var(--primary)] rounded-2xl p-4 space-y-4">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-[var(--text)]"></div>
@@ -336,7 +326,6 @@ export default function ThemeChanger() {
       </div>
     </div>
 
-    {/* Right Sidebar Skeleton */}
     <div className="hidden lg:block w-[260px] space-y-4 ">
       <div className="h-6 w-32 bg-[var(--text)] rounded"></div>
 

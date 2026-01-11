@@ -2,10 +2,7 @@ import React from "react";
 import {
     RiHome7Fill,
     RiMessage2Line,
-    RiBookmarkLine,
-    RiGroupLine,
     RiUser3Line,
-    RiMoreFill
 } from "react-icons/ri";
 import { IoSearchOutline } from "react-icons/io5";
 import { IoNotificationsOutline } from "react-icons/io5";
@@ -117,12 +114,6 @@ function ThreadNav({ setCenterView, setShowOtherUsers, setShowTrends }) {
                         hover:scale-110'
                         />Profile</div>
                 </div>
-
-
-                {/* <button className="w-full mt-6 py-3 bg-white text-black font-semibold text-lg rounded-full"
-                    onClick={() => setShowPost(prev => !prev)}>
-                    Post
-                </button> */}
 
             </div>
 

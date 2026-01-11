@@ -6,8 +6,6 @@ import { useNavigate } from 'react-router-dom'
 import VideoPlayer from './VideoPlayer'
 import { FaEye } from 'react-icons/fa6'
 import dp1 from "../assets/dp1.jpeg"
-import { setStoryData } from '../redux/storySlice'
-import axios from 'axios'
 
 function StoryCard({ storyData }) {
 

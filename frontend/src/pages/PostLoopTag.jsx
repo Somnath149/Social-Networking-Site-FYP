@@ -7,9 +7,7 @@ import { setTagPosts } from "../redux/postSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { MdOutlineKeyboardBackspace } from "react-icons/md";
 import Post from "../component/Post";
-import Loops from "./Loops";
 import LoopCard from "../component/LoopCard";
-import { div } from "framer-motion/client";
 
 function PostLoopTag() {
     const [showPost, setShowPost] = useState(true)
@@ -202,12 +200,9 @@ function PostLoopTag() {
 
 
                             {showThread &&
-                                <div className="flex flex-col justify-center items-center">
                                     <Threads
                                         externalThreads={tagPosts.filter(item => item.mediaType === "thread")}
                                         HashTailwind={true} />
-
-                                </div>
                             }
 
                         </div>

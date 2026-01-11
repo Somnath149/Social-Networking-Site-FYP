@@ -1,6 +1,5 @@
 import React, { useState, useRef } from "react";
 import { FaTimes } from "react-icons/fa";
-import { FiVolume2, FiVolumeX } from "react-icons/fi";
 
 export default function FullScreenViewer({ media, type, onClose }) {
 

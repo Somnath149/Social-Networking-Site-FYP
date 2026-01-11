@@ -1,21 +1,31 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
 import { serverUrl } from "../App";
 import { FaRegHeart, FaHeart, FaRegComment } from "react-icons/fa6";
-import { addRetweet, updateLikes, setThreads } from "../redux/threadSlice";
+import {
+    addRetweet,
+    updateLikes,
+    setThreads,
+    addComment,
+    setPreview
+} from "../redux/threadSlice";
 import { useNavigate } from "react-router-dom";
+import ThreadPreview from "./ThreadPreview";
+import { FiRefreshCw } from "react-icons/fi";
+import renderCaption from "../hooks/useRenderCaption";
 
 function Retweets({ userId, mythreadTailwind }) {
     const { userData } = useSelector(state => state.user);
     const { threads } = useSelector(state => state.thread);
+    const [commentText, setCommentText] = useState({});
+    const [previewThread, setPreviewThread] = useState(null);
     const dispatch = useDispatch();
-    const navigate = useNavigate()
+    const navigate = useNavigate();
 
     const retweets = threads.filter(t =>
-        t.retweets.some(u => u._id === userId)
+        t.retweets?.some(u => u._id === userId)
     );
-
 
     useEffect(() => {
         const loadThreads = async () => {
@@ -32,23 +42,45 @@ function Retweets({ userId, mythreadTailwind }) {
         if (threads.length === 0) loadThreads();
     }, [dispatch, threads.length]);
 
-    const handleLike = async (threadId) => {
+    const handleLike = async (threadId, e) => {
+        e.stopPropagation();
         try {
-            const res = await axios.get(`${serverUrl}/api/thread/like/${threadId}`, {
-                withCredentials: true
-            });
+            const res = await axios.get(
+                `${serverUrl}/api/thread/like/${threadId}`,
+                { withCredentials: true }
+            );
 
             dispatch(updateLikes({
                 threadId: res.data._id,
                 likes: res.data.likes
             }));
-
         } catch (error) {
             console.log("LIKE ERROR:", error);
         }
     };
 
-    const handleRetweet = async (threadId) => {
+    const handleComment = async (threadId, e) => {
+        e.stopPropagation();
+        try {
+            const message = commentText[threadId];
+            if (!message) return;
+
+            const res = await axios.post(
+                `${serverUrl}/api/thread/comment/${threadId}`,
+                { message },
+                { withCredentials: true }
+            );
+
+            dispatch(addComment({ threadId, updatedThread: res.data }));
+            setCommentText(prev => ({ ...prev, [threadId]: "" }));
+        } catch (err) {
+            console.log("COMMENT ERROR:", err);
+        }
+    };
+
+    /* RETWEET */
+    const handleRetweet = async (threadId, e) => {
+        e.stopPropagation();
         try {
             const res = await axios.post(
                 `${serverUrl}/api/thread/retweet/${threadId}`,
@@ -69,125 +101,114 @@ function Retweets({ userId, mythreadTailwind }) {
 
     return (
         <div className={`lg:w-[50%] w-full ${!mythreadTailwind ? "h-screen overflow-y-scroll bg-black" : ""}`}>
+
             <h1 className="text-black text-xl font-bold mb-4">
                 {userId === userData._id ? "Your Retweets" : "Retweets"}
             </h1>
 
             {retweets.length === 0 && (
                 <p className="text-gray-400 text-center mt-10 mb-20">
-                    {userId === userData._id ? "You haven't retweeted any posts yet..." : "haven't retweeted any posts yet..."}
+                    No retweets yet...
                 </p>
             )}
 
             {retweets.map(thread => (
-
                 <div
                     key={thread._id}
-                    className="bg-white mt-3 mb-8 p-4 rounded-xl shadow flex flex-col gap-4"
+                    onClick={() =>{ setPreviewThread(thread)
+                      dispatch(setPreview(thread))
+                    }}
+                    className="bg-[var(--bg)] text-[var(--text)] mt-3 mb-8 p-4 rounded-xl shadow flex flex-col gap-4 cursor-pointer"
                 >
 
+                    <div className="flex items-center gap-2">
+                        <img
+                            src={thread.author.profileImage}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                navigate(`/profile/${thread.author.userName}`);
+                            }}
+                            className="w-12 h-12 rounded-full border border-[var(--border)]"
+                        />
+                        <h1 className="font-semibold">
+                            {thread.author.name}
+                            <span className="text-sm  ml-2">
+                                @{thread.author.userName}
+                            </span>
+                        </h1>
+                    </div>
 
-                    {/* Profile Image */}
-                    <div className="flex flex-col">
-                        <div className="flex items-center gap-1 text-xs text-gray-500 italic mb-2">
-                            Retweeted by
-                            {thread.retweets.slice(0, 3).map(u => (
-                                <img
-                                    key={u._id}
-                                    src={u.profileImage}
-                                    alt={u.userName}
-                                    className="w-4 h-4 rounded-full border ml-1"
-                                    title={u.userName}
-                                />
-                            ))}
-                            {thread.retweets.length > 3 && ` +${thread.retweets.length - 3} more`}
+                    <p className="text-sm ">
+                        {renderCaption( thread.caption || thread.content, navigate)}
+                    </p>
+
+                    {thread.images?.map((img, i) => (
+                        <img key={i} src={img} className="rounded-xl" />
+                    ))}
+
+                    {thread.mediaType === "video" && (
+                        <video src={thread.video} controls className="rounded-xl" />
+                    )}
+
+                    <div className="flex gap-6 items-center">
+                        <div onClick={(e) => handleLike(thread._id, e)} className="flex gap-1">
+                            {thread.likes?.includes(userData._id)
+                                ? <FaHeart className="text-red-600" />
+                                : <FaRegHeart />}
+                            {thread.likes?.length}
                         </div>
 
-                        <div className="flex">
-                            <img
-                                src={thread.author.profileImage}
-                                onClick={() => navigate(`/profile/${thread.author?.userName}`)}
-                                className="w-12 h-12 rounded-full object-cover border"
-                                alt="profile"
-                            />
-                            <h1 className="font-semibold px-2 flex gap-2 items-center">
-                                {thread.author.name}{" "}
-                                <span className="text-sm text-gray-500">
-                                    @{thread.author.userName}
-                                </span>
-                            </h1>
+                        <div className="flex gap-1">
+                            <FaRegComment />
+                            {thread.comments?.length}
+                        </div>
+
+                        <div onClick={(e) => handleRetweet(thread._id, e)} className="flex gap-1">
+                            <FiRefreshCw /> {thread.retweets?.length}
                         </div>
                     </div>
 
-
-                    <div className="w-full">
-
-                        {/* Caption */}
-                        <p className="text-gray-900 text-sm mt-1">
-                            {thread.caption || thread.content}
+                    {thread.comments?.slice(0, 2).map(c => (
+                        <p key={c._id} className="text-sm">
+                            <b>@{c.author?.userName}</b> {c.content}
                         </p>
+                    ))}
 
-                        {/* Images / Video */}
-                        {thread.images?.length > 0 &&
-                            thread.images.map((img, i) => (
-                                <img key={i} src={img} className="rounded-xl mt-2" alt="thread-media" />
-                            ))
-                        }
-
-                        {thread.mediaType === "video" && thread.video && (
-                            <video src={thread.video} controls className="w-full rounded-xl mt-2 border" />
-                        )}
-
-                        {/* Quoted Thread */}
-                        {thread.quoteThread && (
-                            <div className="border-l-4 border-gray-300 pl-4 mt-3 rounded-xl bg-gray-50">
-                                <h1 className="font-semibold">
-                                    {thread.quoteThread.author.name}{" "}
-                                    <span className="text-sm text-gray-500">
-                                        @{thread.quoteThread.author.userName}
-                                    </span>
-                                </h1>
-                                <p className="text-gray-900 text-sm mt-1">
-                                    {thread.quoteThread.caption || thread.quoteThread.content}
-                                </p>
-
-                                {thread.quoteThread.images?.length > 0 &&
-                                    thread.quoteThread.images.map((img, i) => (
-                                        <img key={i} src={img} className="rounded-xl mt-2" alt="quoted-media" />
-                                    ))
-                                }
-
-                                {thread.quoteThread.mediaType === "video" && thread.quoteThread.video && (
-                                    <video src={thread.quoteThread.video} controls className="w-full rounded-xl mt-2 border" />
-                                )}
-                            </div>
-                        )}
-
-                        {/* Count */}
-                        <div className="flex gap-6 mt-3 text-gray-600">
-                            <div className="flex items-center gap-1 cursor-pointer" onClick={() => handleLike(thread._id)}>
-                                {thread.likes?.includes(userData._id) ? <FaHeart className="text-red-600" /> : <FaRegHeart />}
-                                <span>{thread.likes?.length}</span>
-                            </div>
-
-                            <div className="flex items-center gap-1">
-                                <FaRegComment />
-                                <span>{thread.comments?.length}</span>
-                            </div>
-
-                            <div className="flex items-center gap-1">
-                                <span className="cursor-pointer" onClick={() => handleRetweet(thread._id)}>🔁</span>
-                                <span>{thread.retweets?.length}</span>
-                            </div>
-                        </div>
-
+                    <div className="flex gap-2">
+                        <input
+                            type="text"
+                            placeholder="Reply..."
+                            value={commentText[thread._id] || ""}
+                            onClick={(e) => e.stopPropagation()}
+                            onChange={(e) =>
+                                setCommentText(prev => ({
+                                    ...prev,
+                                    [thread._id]: e.target.value
+                                }))
+                            }
+                            className="flex-1  border-b  border-[var(--border)] outline-none"
+                        />
+                        <button
+                            onClick={(e) => handleComment(thread._id, e)}
+                            className="px-3 bg-blue-600 text-white rounded"
+                        >
+                            Send
+                        </button>
                     </div>
                 </div>
             ))}
+
+            {previewThread && (
+                <ThreadPreview
+                    thread={previewThread}
+                    onClose={() => {
+                        setPreviewThread(null)
+                        dispatch(setPreview(null))
+                    }}
+                />
+            )}
         </div>
     );
-
-
 }
 
 export default Retweets;

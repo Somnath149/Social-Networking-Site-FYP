@@ -1,7 +1,5 @@
 import React, { useState } from 'react'
 import { FaRegHeart } from "react-icons/fa6";
-import logo from "../assets/logo.png"
-import StoryCard from './StoryDp';
 import Nav from './Nav';
 import Post from './Post';
 import { useSelector } from 'react-redux';
@@ -32,9 +30,9 @@ function Feed({ theme }) {
 
       <div className='w-[full] h-[100px] flex items-center justify-between p-[20px] lg:hidden'>
 
-        <div  className='text-[40px] font-bold text-gray-400'>
-                            <PsyIncLogo />
-                        </div>
+        <div className='text-[40px] font-bold text-gray-400'>
+          <PsyIncLogo />
+        </div>
 
         <div className='flex items-center gap-[10px]'>
           <div className='relative' onClick={() => navigate("/notifications")}>
@@ -59,18 +57,16 @@ function Feed({ theme }) {
       <div className='w-full min-h-screen flex flex-col items-center gap-[20px] 
                       p-[10px] pt-[40px] bg-[var(--primary)] rounded-t-[60px] relative pb-[120px]' >
 
-        {!activeIndex && !theme && <Nav />}
+        {activeIndex === null && !theme && <Nav />}
+
 
         <div className="relative flex justify-center gap-12 border-b border-gray-700 mb-4">
-
-          {/* Active underline */}
           <span
             className={`absolute bottom-0 h-[3px] w-20 bg-[var(--secondary)] rounded-full
     transition-all duration-300 ease-in-out
     ${showFeed ? "left-[calc(50%-6.5rem)]" : "left-[calc(50%+1.5rem)]"}`}
           />
 
-          {/* Feed */}
           <button
             className={`cursor-dot1 text-xl font-semibold px-4 pb-3 active:scale-95 transition-all duration-300
       ${showFeed
@@ -85,7 +81,6 @@ function Feed({ theme }) {
             Feed
           </button>
 
-          {/* Explore */}
           <button
             className={`cursor-dot1 text-xl font-semibold px-4 pb-3 active:scale-95 transition-all duration-300
       ${showExplore

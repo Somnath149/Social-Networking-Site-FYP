@@ -6,8 +6,7 @@ const NotFound = () => {
     const navigate = useNavigate()
   return (
     <div className="relative h-screen w-full bg-[#030712] flex flex-col items-center justify-center overflow-hidden font-sans">
-      
-      {/* Background Animated Stars */}
+
       {[...Array(30)].map((_, i) => (
         <motion.div
           key={i}
@@ -30,14 +29,13 @@ const NotFound = () => {
         />
       ))}
 
-      {/* Glassmorphism Card */}
       <motion.div 
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5 }}
         className="z-10 backdrop-blur-md bg-white/5 border border-white/10 p-10 rounded-3xl shadow-2xl text-center max-w-lg mx-4"
       >
-        {/* Animated Astronaut/Icon */}
+
         <motion.div
           animate={{ 
             y: [0, -25, 0],
@@ -65,7 +63,6 @@ const NotFound = () => {
           Aap shayad internet ke uss hisse mein aa gaye hain jahan humne abhi tak rasta nahi banaya. 
         </p>
 
-        {/* Action Buttons */}
         <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
           <motion.button
             whileHover={{ scale: 1.05, boxShadow: "0 0 20px rgba(34, 211, 238, 0.4)" }}
@@ -86,7 +83,6 @@ const NotFound = () => {
         </div>
       </motion.div>
 
-      {/* Ambient Light Effects */}
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-600/20 blur-[120px] rounded-full" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-600/20 blur-[120px] rounded-full" />
     </div>

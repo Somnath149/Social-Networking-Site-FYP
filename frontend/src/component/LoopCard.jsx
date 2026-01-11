@@ -4,7 +4,7 @@ import { FiMoreVertical, FiVolume2 } from 'react-icons/fi'
 import { FiVolumeX } from 'react-icons/fi'
 import dp from "../assets/dp.png"
 import FollowButton from './FollowButton'
-import { FaHeart, FaRegHeart, FaRegComment, FaRegBookmark, FaBookmark, FaRegPaperPlane } from "react-icons/fa";
+import { FaHeart, FaRegHeart, FaRegComment,FaRegPaperPlane } from "react-icons/fa";
 import { useDispatch, useSelector } from 'react-redux'
 import { serverUrl } from '../App'
 import { setLoopData, updateLoopInFeed } from '../redux/loopSlice'
@@ -16,8 +16,8 @@ import EmojiPicker from "emoji-picker-react";
 import { BsEmojiSmile } from "react-icons/bs";
 
 
-function LoopCard({ loop, profileTailwind, loops,setLoops,fromHashTag = false }) {
-  const [viewAdded, setViewAdded] = useState(false);
+function LoopCard({ loop,  loops,setLoops,fromHashTag = false , active}) {
+
   const [isLoading, setIsLoading] = useState(true);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const viewTimerRef = useRef(null);
@@ -76,7 +76,7 @@ function LoopCard({ loop, profileTailwind, loops,setLoops,fromHashTag = false })
 
   const fetchFollowingUsers = async () => {
     const res = await axios.get(`${serverUrl}/api/user/followingList`, { withCredentials: true });
-    setFollowingUsers(res.data); // now contains userName, profileImage
+    setFollowingUsers(res.data); 
   };
 
   useEffect(() => {
@@ -137,34 +137,8 @@ function LoopCard({ loop, profileTailwind, loops,setLoops,fromHashTag = false })
     }
   };
 
-
-  // useEffect(() => {
-  //   const observer = new IntersectionObserver(([entry]) => {
-  //     const video = videoRef.current
-
-  //     if (!video) return
-
-  //     if (entry.isIntersecting) {
-  //       video.currentTime = 0;
-  //       video.play()
-  //       setIsPlaying(true)
-  //     } else {
-  //       video.pause()
-  //       setIsPlaying(false)
-  //     }
-  //   }, { threshold: 0.6 })
-  //   if (videoRef.current) {
-  //     observer.observe(videoRef.current)
-  //   }
-
-  //   return () => {
-  //     if (videoRef.current) {
-  //       observer.unobserve(videoRef.current)
-  //     }
-  //   }
-  // }, [])
-
   useEffect(() => {
+
     const observer = new IntersectionObserver(([entry]) => {
       const video = videoRef.current;
       if (!video) return;
@@ -305,7 +279,6 @@ function LoopCard({ loop, profileTailwind, loops,setLoops,fromHashTag = false })
 
       const updatedLoop = result.data;
 
-      // Redux me loopData update karna
       const updatedLoops = loopData.map(p =>
         p._id === updatedLoop._id ? updatedLoop : p
       );
@@ -322,7 +295,6 @@ function LoopCard({ loop, profileTailwind, loops,setLoops,fromHashTag = false })
     try {
       const result = await axios.delete(`${serverUrl}/api/loop/delete/${loop._id}`, { withCredentials: true });
 
-      // remove deleted loop from loopData
       const updatedLoops = loopData.filter(p => p._id !== loop._id);
       dispatch(setLoopData(updatedLoops));
       dispatch(updateLoopInFeed(updatedLoops))
@@ -346,6 +318,22 @@ function LoopCard({ loop, profileTailwind, loops,setLoops,fromHashTag = false })
       socket?.off("loopViewed");
     };
   }, [socket, loopData, dispatch]);
+
+
+useEffect(() => {
+  const video = videoRef.current;
+  if (!video) return;
+
+  if (active) {
+    video.currentTime = 0;
+    video.play().catch(() => {
+    });
+    setIsPlaying(true);
+  } else {
+    video.pause();
+    setIsPlaying(false);
+  }
+}, [active]);
 
 
   const renderCaption = (text) => {
@@ -421,7 +409,6 @@ function LoopCard({ loop, profileTailwind, loops,setLoops,fromHashTag = false })
                   {com?.author?.userName}
                 </div>
 
-                {/*show Delete button if user is the author */}
                 {com.author?._id === userData._id && (
                   <button onClick={() => handleDeleteComment(com._id)}
                     className='ml-auto text-red-500 text-sm'>
@@ -449,7 +436,6 @@ function LoopCard({ loop, profileTailwind, loops,setLoops,fromHashTag = false })
 
         <div className="w-full h-[80px] flex text-[var(--text)] items-center gap-3 px-[20px] relative">
 
-          {/* Profile image */}
           <div className="w-[40px] h-[40px] md:w-14 md:h-14 border-2 border-gray-300 rounded-full overflow-hidden">
             <img
               src={loop.author?.profileImage || dp}
@@ -457,7 +443,6 @@ function LoopCard({ loop, profileTailwind, loops,setLoops,fromHashTag = false })
             />
           </div>
 
-          {/* Input */}
           <input
             type="text"
             className="flex-1 px-3 border-b-2 border-gray-500 outline-none h-[40px] bg-transparent"
@@ -466,7 +451,6 @@ function LoopCard({ loop, profileTailwind, loops,setLoops,fromHashTag = false })
             placeholder="Write a comment..."
           />
 
-          {/* Emoji button */}
           <button
             type="button"
             className="text-xl cursor-dot1"
@@ -475,7 +459,6 @@ function LoopCard({ loop, profileTailwind, loops,setLoops,fromHashTag = false })
             <BsEmojiSmile />
           </button>
 
-          {/* Send */}
           <button
             type="button"
             onClick={handleComment}
@@ -484,7 +467,6 @@ function LoopCard({ loop, profileTailwind, loops,setLoops,fromHashTag = false })
             <FaRegPaperPlane />
           </button>
 
-          {/* Emoji Picker */}
           {showEmojiPicker && (
             <div className="absolute bottom-[90px] right-5 z-50">
               <EmojiPicker
@@ -510,11 +492,11 @@ function LoopCard({ loop, profileTailwind, loops,setLoops,fromHashTag = false })
         onClick={handleClick}
         onTimeUpdate={HandleTimeUpdate}
         onDoubleClick={handleLikeOnDoubleClick}
-        onLoadStart={() => setIsLoading(true)}      // fetch start
-        onLoadedData={() => setIsLoading(false)}    // data loaded
-        onCanPlay={() => setIsLoading(false)}       // ready to play
-        onWaiting={() => setIsLoading(true)}        // buffering
-        onPlaying={() => setIsLoading(false)}       // buffer end
+        onLoadStart={() => setIsLoading(true)}     
+        onLoadedData={() => setIsLoading(false)}    
+        onCanPlay={() => setIsLoading(false)}      
+        onWaiting={() => setIsLoading(true)}       
+        onPlaying={() => setIsLoading(false)}       
         onStalled={() => setIsLoading(true)}
       />
 
@@ -608,7 +590,6 @@ function LoopCard({ loop, profileTailwind, loops,setLoops,fromHashTag = false })
                 <div className="bg-white w-[300px] rounded-2xl p-4">
                   <h2 className="text-lg font-bold text-black mb-3">Share Loop To</h2>
 
-                  {/* If no following users */}
                   {followingUsers.length === 0 && (
                     <p className="text-gray-600 text-center py-4">
                       You are not following anyone.

@@ -10,6 +10,7 @@ function getAllStories() {
     const {userData} = useSelector(state=>state.user)
     
     useEffect(()=>{
+        if (!userData?._id) return;
         const fetchStories= async () => {
             try {
                 const result= await axios.get(`${serverUrl}/api/story/getAll`,{withCredentials:true})

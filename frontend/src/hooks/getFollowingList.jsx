@@ -7,7 +7,9 @@ import { setFollowing } from '../redux/userSlice'
 function useFollowingList() {
     const dispatch= useDispatch()
     const {storyData} = useSelector(state=>state.story)
+    const {userData} = useSelector(state=>state.user)
     useEffect(()=>{
+        if (!userData?._id) return;
         const fetchUser= async () => {
             try {
                 const result= await axios.get(`${serverUrl}/api/user/followingList`,{withCredentials:true})

@@ -8,19 +8,15 @@ import { IoMdSend } from "react-icons/io"
 import SenderMessage from '../component/SenderMessage'
 import { serverUrl } from '../App'
 import axios from 'axios'
-import { addMessage, setMessages } from '../redux/messageSlice'
+import { setMessages } from '../redux/messageSlice'
 import ReceiverMessage from '../component/ReceiverMessage'
 import { FaRegSmile } from 'react-icons/fa'
 import EmojiPicker from 'emoji-picker-react'
-import { MdCall, MdVideoCall } from "react-icons/md";
-import { ZegoUIKitPrebuilt } from '@zegocloud/zego-uikit-prebuilt'
-import { toast } from 'react-toastify'
 
-function MessageArea({user}) {
+function MessageArea() {
 
     const { selectedUser, messages } = useSelector(state => state.message)
     const { userData } = useSelector(state => state.user)
-    const { socket } = useSelector(state => state.socket)
     const [input, setInput] = useState("")
     const imageInput = useRef()
     const navigate = useNavigate()
@@ -75,20 +71,6 @@ function MessageArea({user}) {
         }
     }, [selectedUser]);
 
-    // useEffect(() => {
-    //     if (!socket) return;
-
-    //     const handleMessage = (mess) => {
-    //         dispatch(addMessage(mess));
-    //         toast.info(`${mess.sender?.userName}: ${mess?.message}`);
-    //     };
-        
-    //     socket.on("newMessage", handleMessage);
-    //     return () => socket.off("newMessage", handleMessage);
-
-    // }, [socket,dispatch]);
-
-
     const onEmojiClick = (emojiData) => {
         setInput((prev) => prev + emojiData.emoji)
     }
@@ -119,15 +101,15 @@ function MessageArea({user}) {
             <div className='w-full h-[90%] pt-[100px] lg:pb-[120px] px-[40px] flex flex-col gap-[50px] overflow-auto bg-[var(--bg)]'>
 
 
-               {messages.map((mess, index) => (
-  <div key={index}>
-    {mess?.sender?._id === userData?._id ? (
-      <SenderMessage message={mess} />
-    ) : (
-      <ReceiverMessage message={mess} />
-    )}
-  </div>
-))}
+                {messages.map((mess, index) => (
+                    <div key={index}>
+                        {mess?.sender?._id === userData?._id ? (
+                            <SenderMessage message={mess} />
+                        ) : (
+                            <ReceiverMessage message={mess} />
+                        )}
+                    </div>
+                ))}
 
 
 

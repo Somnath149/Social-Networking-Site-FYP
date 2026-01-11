@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import axios from 'axios'
 import { FaRegHeart } from "react-icons/fa6";
-import logo from "../assets/logo.png"
-import dp from "../assets/dp.png"
 import { useDispatch, useSelector } from 'react-redux';
 import { serverUrl } from '../App';
 import { setUserData } from '../redux/userSlice';
@@ -10,9 +8,9 @@ import OtherUsers from './OtherUsers';
 import dp1 from "../assets/dp1.jpeg"
 import { useNavigate } from 'react-router-dom';
 import Notifications from '../pages/Notifications';
-import PsyncTitle from '../../public/PsyncTitle';
 import PsyIncLogo from '../../public/PsyIncLogo';
 import { FaPlusSquare } from 'react-icons/fa';
+
 function LeftSide() {
     const [showNotifications, setShowNotifications] = useState(false)
     const [randomUsers, setRandomUsers] = useState([]);
@@ -40,8 +38,6 @@ function LeftSide() {
         }
     }, [suggestedUser]);
 
-
-    
     return (
         <div className={`w-[25%] hidden lg:block h-[100vh] bg-[var(--bg)] border-r-2 border-gray-900 
         ${showNotifications ? "overflow-auto" : ""}`}>
@@ -60,7 +56,7 @@ function LeftSide() {
                
             </div>
 
-                <div className='relative z-[100]' onClick={() => setShowNotifications(prev => !prev)}>
+                <div className='relative ' onClick={() => setShowNotifications(prev => !prev)}>
                     <FaRegHeart
                         className=" cursor-dot1 text-[var(--text)] w-[25px] h-[25px] cursor-pointer hover:text-red-500
                          hover:animate-[beat_0.3s_ease-in-out]"

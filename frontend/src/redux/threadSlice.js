@@ -5,16 +5,36 @@ const threadSlice = createSlice({
     initialState: {
         threads: [],
         commentedThreads: [],
-        followThread: []
+        followThread: [],
+        previewThread: null,
     },
     reducers: {
         setThreads: (state, action) => {
             state.threads = action.payload;
         },
 
+        setPreview: (state, action) => {
+    state.previewThread = action.payload; 
+},
+
+
         addThread: (state, action) => {
             state.threads.unshift(action.payload);
         },
+
+        updateVerdict: (state, action) => {
+  const updatedThread = action.payload;
+
+  const thread = state.threads.find(t => t._id === updatedThread._id);
+  if (thread) thread.verdict = updatedThread.verdict;
+
+  const commentedThread = state.commentedThreads.find(t => t._id === updatedThread._id);
+  if (commentedThread) commentedThread.verdict = updatedThread.verdict;
+
+  const followThread = state.followThread.find(t => t._id === updatedThread._id);
+  if (followThread) followThread.verdict = updatedThread.verdict;
+}
+,
 
         setFollowThreads: (state, action) => {
             state.followThread = action.payload;
@@ -85,7 +105,9 @@ export const {
     addRetweet,
     setCommentedThreads,
     addQuoteThread,
-    setFollowThreads
+    setFollowThreads,
+    updateVerdict,
+    setPreview
 } = threadSlice.actions;
 
 export default threadSlice.reducer;

@@ -1,10 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { FiVolume2, FiVolumeX } from 'react-icons/fi';
 
-function VideoPlayer({ media, active, feed }) {
+function VideoPlayer({ media, active, feed, ExploreTailwind }) {
   const [isPlaying, setIsPlaying] = useState(true)
-  const [isMuted, setIsMuted] = useState(true)
+  const [isMuted, setIsMuted] = useState(false)
   const [isLoading, setIsLoading] = useState(true);
+
   const videoRef = useRef()
   useEffect(() => {
     const video = videoRef.current;
@@ -43,19 +44,37 @@ const handleClick = () => {
     }
   }
 
+useEffect(() => {
+  if (ExploreTailwind) {
+    setIsMuted(true);       
+  } else if (feed && active) {
+    setIsMuted(false);         
+  } else if (feed && !active) {
+    setIsMuted(true);        
+  }
+}, [ExploreTailwind, feed, active]);
+
+
   return (
     <div className='h-[100%] relative cursor-pointer max-w-full rounded-2xl overflow-hidden'>
-      {feed && !active &&
-        <div className='absolute top-[20px] z-[100] right-[20px]' onClick={() => setIsMuted(prev => !prev)}>
-          {!isMuted ? <FiVolume2 className='w-[20px] h-[20px] cursor-pointer  text-white font-semibold' /> :
-            <FiVolumeX className='w-[20px] h-[20px] cursor-pointer  text-white font-semibold' />}
-        </div>
-      }
+     {feed && !active && (
+  <div
+    className="absolute top-[20px] right-[20px] z-[100]"
+    onClick={() => setIsMuted(prev => !prev)}
+  >
+    {!isMuted ? (
+      <FiVolume2 className="w-[20px] h-[20px] text-white" />
+    ) : (
+      <FiVolumeX className="w-[20px] h-[20px] text-white" />
+    )}
+  </div>
+)}
+
 
       <video ref={videoRef}
         src={media}
         playsInline
-        muted={!active && isMuted}
+        muted={isMuted}
         onClick={handleClick}
         loop
         onLoadStart={() => setIsLoading(true)}     
@@ -66,7 +85,7 @@ const handleClick = () => {
         onStalled={() => setIsLoading(true)}
         preload="auto" className='h-[100%] cursor-pointer w-full object-cover rounded-2xl'></video>
 
-        {isLoading && (
+        {isLoading && !ExploreTailwind && (
         <div className="absolute inset-0 z-[200] flex items-center justify-center bg-black/40">
           <div className="w-10 h-10 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
         </div>

@@ -1,6 +1,6 @@
 import React from 'react'
-import dp1 from "../assets/dp1.jpeg"
 import dp from "../assets/dp.png"
+
 function NotificationCard({ noti }) {
   return (
 <div className="
@@ -27,30 +27,7 @@ function NotificationCard({ noti }) {
                     </div>
                 </div>
             </div>
-
-            <div className='w-[40px] h-[40px] rounded-full overflow-hidden border-4 border-[var(--primary)]'>
-                {noti.loop ? (
-                    <video
-                        src={noti.loop.media}
-                        muted
-                        loop
-                        className='h-full w-full object-cover'
-                    />
-                ) : noti.post?.mediaType === "image" ? (
-                    <img
-                        src={noti.post.media}
-                        className='h-full w-full object-cover'
-                        alt=""
-                    />
-                ) : noti.post ? (
-                    <video
-                        src={noti.post.media}
-                        muted
-                        loop
-                        className='h-full w-full object-cover'
-                    />
-                ) : null}
-            </div>
+        
         </div>
     );
 }

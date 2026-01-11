@@ -5,28 +5,21 @@ import { useDispatch, useSelector } from 'react-redux';
 import dp1 from "../assets/dp1.jpeg"
 import ThemeChanger from './ThemeChanger';
 import { serverUrl } from '../App';
-import { setNotificationsEnabled, setUserData } from '../redux/userSlice';
+import { setUserData } from '../redux/userSlice';
 import axios from "axios";
 import { MdOutlineKeyboardBackspace } from 'react-icons/md';
 
 function Settings() {
   const [activeTab, setActiveTab] = useState('personal');
-
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteEmail, setDeleteEmail] = useState("");
   const [deletePassword, setDeletePassword] = useState("");
   const [deleteLoading, setDeleteLoading] = useState(false);
-  const [loading, setLoading] = useState(false)
   const { userData } = useSelector(state => state.user)
   const navigate = useNavigate()
   const dispatch = useDispatch()
-  const [notifications, setNotifications] = useState(true);
-
   const [issue, setIssue] = useState("");
   const [sending, setSending] = useState(false);
-  const { notificationsEnabled } = useSelector(state => state.user);
-  const handleSaveNotifications = () => alert('Notification Settings Saved!');
-
 
   const handleLogOut = async () => {
     const ok = confirm("Do you want to logout?");
@@ -76,7 +69,6 @@ function Settings() {
 
   return (
     <div className="flex flex-col lg:flex-row  h-screen overflow-hidden bg-[var(--bg)]/90">
-      {/* Left Navigation */}
       <div className="w-full lg:w-64 bg-[var(--bg)] border-b lg:border-b-0 lg:border-r border-gray-200 p-4 lg:p-6">
         <div className='flex items-center gap-3'>
           <div className='text-[var(--text)] w-[25px] h-[25px] cursor-pointer'
@@ -116,15 +108,7 @@ function Settings() {
           >
             Security
           </li>
-          <li
-            className={`cursor-pointer text-center lg:text-left ${activeTab === "notifications"
-              ? "text-indigo-600 font-semibold"
-              : "text-[var(--text)]"
-              }`}
-            onClick={() => setActiveTab("notifications")}
-          >
-            Notifications
-          </li>
+          
           <li
             className={`cursor-pointer text-center lg:text-left ${activeTab === "help"
               ? "text-indigo-600 font-semibold"
@@ -141,10 +125,6 @@ function Settings() {
       <div className='lg:p-8  overflow-y-auto'>
         {activeTab === 'theme' && (
           <div className="bg-[var(--primary)] border border-gray-200 rounded-2xl shadow-sm">
-            {/* <h3 className="text-xl font-semibold mb-2">Change Theme</h3>
-            <p className="text-[var(--text)] text-sm mb-4">
-              Update your password regularly to keep your account secure.
-            </p> */}
             <ThemeChanger />
           </div>
         )}
@@ -154,7 +134,6 @@ function Settings() {
         {activeTab === 'security' && (
           <div className="">
 
-            {/* Change Password */}
             <div className="bg-[var(--primary)] border border-gray-200 rounded-2xl p-3 shadow-sm">
               <h3 className="text-xl font-semibold text-[var(--text)] mb-2">Change Password</h3>
               <p className="text-[var(--text)] text-sm mb-4">
@@ -163,7 +142,6 @@ function Settings() {
               <ForgotPassword login={true} />
             </div>
 
-            {/* Account Actions */}
             <div className="bg-red-50 border border-red-200 rounded-2xl p-6">
               <h3 className="text-xl font-semibold text-red-600 mb-2">Danger Zone</h3>
               <p className="text-red-500 text-sm mb-4">
@@ -191,7 +169,6 @@ function Settings() {
         )}
       </div>
 
-      {/* Right Content */}
       <div className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto">
         {activeTab === "personal" && (
           <div className="max-w-2xl mx-auto bg-[#0a1010] border border-gray-800 rounded-3xl p-5 sm:p-6 lg:p-8 shadow-xl">
@@ -255,32 +232,10 @@ function Settings() {
             </div>
           </div>
         )}
-        
-        {activeTab === 'notifications' && (
-          <div className="max-w-xl text-[var(--text)]">
-            <h2 className="text-3xl font-bold mb-6">Notifications</h2>
-            <label className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                checked={notificationsEnabled}
-                onChange={() => dispatch(setNotificationsEnabled(!notificationsEnabled))}
-                className="w-5 h-5"
-              />
-              Enable Notifications
-            </label>
-            <button
-              onClick={handleSaveNotifications}
-              className="mt-4 bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700"
-            >
-              Save
-            </button>
-          </div>
-        )}
 
         {activeTab === 'help' && (
           <div className="max-w-2xl text-[var(--text)] space-y-8">
 
-            {/* Help Header */}
             <div className="bg-[var(--primary)] border border-gray-200 rounded-2xl p-6 shadow-sm">
               <h2 className="text-3xl font-bold mb-2">Help & Support</h2>
               <p className="text-[var(--text)]">
@@ -288,7 +243,6 @@ function Settings() {
               </p>
             </div>
 
-            {/* Support Contact */}
             <div className="bg-[var(--primary)] border border-gray-200 rounded-2xl p-6 shadow-sm">
               <h3 className="text-xl font-semibold mb-2">Contact Support</h3>
               <p className="text-[var(--text)] mb-4">
@@ -329,7 +283,6 @@ function Settings() {
               </button>
             </div>
 
-            {/* Quick Tips */}
             <div className="bg-[var(--primary)] border border-gray-200 rounded-2xl p-6">
               <h3 className="text-xl font-semibold mb-4">Quick Tips</h3>
 

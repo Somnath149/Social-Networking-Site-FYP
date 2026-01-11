@@ -5,7 +5,6 @@ import { useNavigate } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
 import { setUserData } from '../redux/userSlice'
 
-// Helper Icon for the Branding Panel
 const RocketIcon = () => (
     <svg className="w-16 h-16 mb-4 text-purple-400 animate-bounce-slow" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M13 7h1v1h-1V7zm0 3h1v1h-1v-1zm4-3h1v1h-1V7zm0 3h1v1h-1v-1zM6 16.5V18a2 2 0 002 2h8a2 2 0 002-2v-1.5M6 16.5L3 12m18 4.5l-3-4.5M6 16.5l-3 3m18-3l-3 3M12 4.5v15m0-15l6 6M12 4.5L6 10.5M15 15.5L9 15.5"></path>
@@ -13,7 +12,7 @@ const RocketIcon = () => (
 )
 
 function SignIn() {
-    // --- LOGIC REMAINS UNCHANGED ---
+
     const [loading, setLoading] = useState(false)
     const [userName, setUserName] = useState('')
     const [password, setPassword] = useState('')
@@ -44,19 +43,17 @@ function SignIn() {
             setLoading(false)
         }
     }
-    // --- END LOGIC ---
 
     return (
         <>
             <style jsx global>{`
-                /* Keyframes for the card scale-in */
+
                 @keyframes scaleIn {
                     from { transform: scale(0.95); opacity: 0; }
                     to { transform: scale(1); opacity: 1; }
                 }
                 .animate-scaleIn { animation: scaleIn 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
-                
-                /* Subtle vertical motion for the icon */
+ 
                 @keyframes bounceSlow {
                     0%, 100% { transform: translateY(0); }
                     50% { transform: translateY(-10px); }
@@ -69,15 +66,13 @@ function SignIn() {
             <div
                 className="w-full h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-gray-800 to-black p-4 sm:p-6"
             >
-                {/* Main Card Container with scale-in animation */}
+
                 <div className="w-full max-w-5xl h-auto lg:h-[650px] bg-white rounded-3xl flex overflow-hidden shadow-2xl border border-gray-700 transform scale-95 opacity-0 animate-scaleIn">
                     
-                    {/* Left Panel: Form Section */}
                     <div className="w-full lg:w-1/2 h-full bg-white flex flex-col items-center justify-center p-8 sm:p-12 md:p-16 gap-6">
                         <h2 className="text-4xl font-extrabold text-gray-900 mb-2">Welcome Back 👋</h2>
                         <p className="text-gray-500 mb-4 text-sm">Please sign in to access your secure profile.</p>
 
-                        {/* Username Input */}
                         <div className="w-full">
                             <label htmlFor="userName" className="block mb-1 text-sm font-semibold text-gray-700">
                                 Username
@@ -92,7 +87,6 @@ function SignIn() {
                             />
                         </div>
 
-                        {/* Password Input */}
                         <div className="w-full">
                             <label htmlFor="password" className="block mb-1 text-sm font-semibold text-gray-700">
                                 Password
@@ -107,7 +101,6 @@ function SignIn() {
                             />
                         </div>
 
-                        {/* Forgot Password Link */}
                         <p
                             onClick={() => navigate('/forgot-password')}
                             className="text-xs text-purple-600 hover:underline cursor-pointer self-end font-medium transition duration-200"
@@ -117,7 +110,6 @@ function SignIn() {
 
                         {err && <p className="text-red-600 text-sm font-semibold mt-2">{err}</p>}
 
-                        {/* Submit Button */}
                         <button
                             type="button"
                             disabled={loading}
@@ -135,7 +127,6 @@ function SignIn() {
                             )}
                         </button>
 
-                        {/* Sign Up Link */}
                         <p className="text-sm text-gray-600 text-center mt-2">
                             Don't have an account?{' '}
                             <span
@@ -147,10 +138,8 @@ function SignIn() {
                         </p>
                     </div>
 
-                    {/* Right Panel: Welcome/Branding Section (Dark/Theme) */}
                     <div className="hidden lg:flex w-1/2 h-full justify-center items-center bg-purple-700 flex-col gap-3 text-white p-10 relative overflow-hidden rounded-tr-3xl rounded-br-3xl">
                         
-                        {/* Abstract background subtle texture */}
                         <div className="absolute inset-0 bg-cover bg-center opacity-10" style={{backgroundImage: "url('https://source.unsplash.com/random/800x600?abstract,geometric')"}}></div>
                         <div className="absolute inset-0 bg-gradient-to-br from-indigo-800 to-purple-900 opacity-80 z-0"></div>
 
@@ -163,7 +152,7 @@ function SignIn() {
                             <p className="mt-4 text-sm max-w-xs text-gray-300">
                                 Ready to continue connecting, sharing, and staying informed?
                             </p>
-                            {/* Toggle/Navigation Button */}
+                         
                             <button
                                 onClick={() => navigate('/signup')}
                                 className="mt-8 px-8 py-3 bg-white text-purple-700 font-bold rounded-full shadow-lg transition duration-300 hover:bg-gray-100 transform hover:scale-105"

@@ -1,5 +1,4 @@
 import React from 'react'
-import dp from "../assets/dp.png"
 import dp1 from "../assets/dp1.jpeg"
 import { FiPlusCircle } from 'react-icons/fi'
 import { useNavigate } from 'react-router-dom'

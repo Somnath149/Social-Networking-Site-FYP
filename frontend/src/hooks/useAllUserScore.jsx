@@ -8,7 +8,7 @@ import { setAllUsers } from "../redux/userSlice";
 const useAllUserScore = () => {
  const {userData}= useSelector(state=>state.user)
   const dispatch = useDispatch();
-  const users = useSelector(state => state.user.allUsers); // ✅ correct
+  const users = useSelector(state => state.user.allUsers); 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -20,7 +20,7 @@ const useAllUserScore = () => {
         `${serverUrl}/api/user/weekly-active-users`,
         { withCredentials: true }
       );
-      dispatch(setAllUsers(data)); // ✅ redux update
+      dispatch(setAllUsers(data)); 
     } catch (err) {
       console.error(err);
       setError(err);

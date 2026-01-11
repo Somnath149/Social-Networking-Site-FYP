@@ -9,6 +9,7 @@ function getAllThreads() {
     const {userData} = useSelector(state=>state.user)
 
      useEffect(() => {
+        if (!userData?._id) return;
         const fetchThreads = async () => {
             try {
                 const result = await axios.get(`${serverUrl}/api/thread/getAllthreads`,{ withCredentials: true }

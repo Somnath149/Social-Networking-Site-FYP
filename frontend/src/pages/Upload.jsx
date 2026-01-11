@@ -17,9 +17,7 @@ function Upload() {
     const navigate = useNavigate()
     const dispatch = useDispatch()
     const { postData } = useSelector(state => state.post)
-    const { storyData } = useSelector(state => state.story)
     const { loopData } = useSelector(state => state.loop)
-    const { userData } = useSelector(state => state.user)
     const [uploadType, setUploadType] = useState("post")
     const [frontendMedia, setFrontendMedia] = useState("")
     const [backendMedia, setBackendMedia] = useState("")
@@ -28,7 +26,6 @@ function Upload() {
     const [caption, setCaption] = useState("")
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
     const mediaInput = useRef()
-
 
     const onEmojiClick = (emojiData) => {
         setCaption(prev => prev + emojiData.emoji);
@@ -166,7 +163,6 @@ function Upload() {
             {frontendMedia && (
                 <div className="w-[80%] max-w-[500px] mt-60 flex flex-col items-center gap-4">
 
-                    {/* Media */}
                     {mediaType === "image" ? (
                         <img
                             src={frontendMedia}
@@ -175,11 +171,11 @@ function Upload() {
                         />
                     ) : (
                         <div className="w-full rounded-3xl overflow-hidden shadow-xl">
-                            <VideoPlayer media={frontendMedia} />
+                            
+                            <VideoPlayer media={frontendMedia} upload = {true} />
                         </div>
                     )}
 
-                    {/* EDIT CARD (Post & Reel) */}
                     {uploadType !== "story" && (
                         <div className="w-full bg-white/80 backdrop-blur-md rounded-2xl shadow-xl p-4 relative">
 
@@ -224,7 +220,6 @@ function Upload() {
                         </div>
                     )}
 
-                    {/* Upload Button */}
                     <button
                         disabled={isUploading}
                         onClick={handleUpload}

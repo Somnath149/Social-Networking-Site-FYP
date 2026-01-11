@@ -10,7 +10,6 @@ import { setUserData } from '../redux/userSlice';
 import FollowButton from './FollowButton';
 import { useNavigate } from 'react-router-dom';
 import { FaShare } from "react-icons/fa";
-import getFollowingList from '../hooks/getfollowingList';
 import { addMessage } from '../redux/messageSlice';
 import { FiMoreVertical } from 'react-icons/fi';
 import { FaTrash } from 'react-icons/fa6';
@@ -53,29 +52,27 @@ function Post({ post, disableProfileClick, Ssrc, onPostClick, ExploreTailwind, a
         setMessage(prev => prev + emojiData.emoji);
     };
 
-    const handleLike = async () => {
-        try {
-            const result = await axios.get(`${serverUrl}/api/post/like/${post._id}`, { withCredentials: true })
-            const updatedPost = result.data
+   const handleLike = async () => {
+  try {
+    const result = await axios.get(`${serverUrl}/api/post/like/${post._id}`, { withCredentials: true });
+    const updatedPost = result.data;
 
-            if (posts && setPosts) {
-                const updatedPosts = posts.map(p =>
-                    p._id === post._id ? { ...updatedPost, mediaType: p.mediaType } : p
-                );
-                setPosts(updatedPosts);
-            }
-            // ✅ feed / profile page
-            else {
-                const updatedPosts = postData.map(p =>
-                    p._id === post._id ? updatedPost : p
-                );
-                dispatch(setPostData(updatedPosts));
-            }
+    const updatedPosts = postData.map(p =>
+      p._id === post._id
+        ? {
+            ...p, // keep old data
+            likes: updatedPost.likes, // update only likes
+            shares: updatedPost.shares, // optional: update shares if needed
+          }
+        : p
+    );
 
-        } catch (error) {
-            console.error("Like failed:", error)
-        }
-    }
+    dispatch(setPostData(updatedPosts));
+  } catch (error) {
+    console.error("Like failed:", error);
+  }
+};
+
 
     const handleComment = async () => {
         if (!message.trim()) return;
@@ -89,11 +86,17 @@ function Post({ post, disableProfileClick, Ssrc, onPostClick, ExploreTailwind, a
                 );
                 setPosts(updatedPosts);
             }
-            // ✅ feed / profile page
+        
             else {
-                const updatedPosts = postData.map(p =>
-                    p._id === post._id ? updatedPost : p
-                );
+               const updatedPosts = postData.map(p =>
+  p._id === post._id
+    ? { 
+        ...p, 
+        comments: updatedPost.comments // update comments if needed
+      }
+    : p
+);
+
                 dispatch(setPostData(updatedPosts));
             }
         } catch (error) {
@@ -146,8 +149,6 @@ function Post({ post, disableProfileClick, Ssrc, onPostClick, ExploreTailwind, a
             console.error("Delete post failed:", error);
         }
     };
-
-
 
     const handleSharePost = async (selectedUser) => {
         try {
@@ -220,7 +221,7 @@ function Post({ post, disableProfileClick, Ssrc, onPostClick, ExploreTailwind, a
     return (
         <div className={`
     ${ExploreTailwind
-                ? "w-full mb-2 break-inside-avoid bg-[var(--secondary)] rounded-2xl "        // Masonry ke liye
+                ? "w-full mb-2 break-inside-avoid bg-[var(--secondary)] rounded-2xl "
                 : "w-[90%] max-w-[500px] items-center  relative shadow-[#00000030] bg-[var(--bg)] shadow-lg min-h-[450px] pb-[20px] flex flex-col rounded-2xl"
             }
   `}>
@@ -302,7 +303,7 @@ function Post({ post, disableProfileClick, Ssrc, onPostClick, ExploreTailwind, a
                     <>
                         {post.media.endsWith(".mp4") ? (
                             <div className="w-full max-w-[500px] flex items-center justify-center">
-                                <VideoPlayer media={post.media} active={active} feed={feed} />
+                                <VideoPlayer media={post.media} active={active} feed={feed} ExploreTailwind={ExploreTailwind}/>
                             </div>
                         ) : (
                             <div className="w-full h-auto flex items-center justify-center">
@@ -362,7 +363,6 @@ function Post({ post, disableProfileClick, Ssrc, onPostClick, ExploreTailwind, a
                             <div className="bg-white w-[300px] rounded-2xl p-4">
                                 <h2 className="text-lg font-bold mb-3">Share Loop To</h2>
 
-                                {/* If no following users */}
                                 {followingUsers.length === 0 && (
                                     <p className="text-gray-600 text-center py-4">
                                         You are not following anyone.
@@ -398,9 +398,6 @@ function Post({ post, disableProfileClick, Ssrc, onPostClick, ExploreTailwind, a
                     )
                 }
 
-
-
-
                 <div className="w-full px-[20px] mt-2 text-[var(--text)]">
                     <div className="flex flex-col gap-1 w-full">
                         <div className="flex items-center gap-2">
@@ -434,14 +431,10 @@ function Post({ post, disableProfileClick, Ssrc, onPostClick, ExploreTailwind, a
                     </div>
                 </div>
 
-
-
-
                 {showComment &&
                     <div className='w-full text-[var(--text)] flex flex-col gap-[30px] pb-[20px]'>
                         <div className="w-full h-[80px] flex items-center gap-3 px-[20px] relative">
 
-                            {/* Profile image */}
                             <div className="w-[40px] h-[40px] md:w-14 md:h-14 border-2 border-gray-300 rounded-full overflow-hidden">
                                 <img
                                     src={post.author?.profileImage || dp}
@@ -449,7 +442,6 @@ function Post({ post, disableProfileClick, Ssrc, onPostClick, ExploreTailwind, a
                                 />
                             </div>
 
-                            {/* Input */}
                             <input
                                 type="text"
                                 className="flex-1 px-3 border-b-2 border-gray-500 outline-none h-[40px] bg-transparent"
@@ -457,8 +449,6 @@ function Post({ post, disableProfileClick, Ssrc, onPostClick, ExploreTailwind, a
                                 onChange={(e) => setMessage(e.target.value)}
                                 placeholder="Write a comment..."
                             />
-
-                            {/* Emoji button */}
                             <button
                                 type="button"
                                 className="text-xl cursor-dot1"
@@ -467,7 +457,6 @@ function Post({ post, disableProfileClick, Ssrc, onPostClick, ExploreTailwind, a
                                 <BsEmojiSmile />
                             </button>
 
-                            {/* Send */}
                             <button
                                 type="button"
                                 onClick={handleComment}
@@ -476,7 +465,6 @@ function Post({ post, disableProfileClick, Ssrc, onPostClick, ExploreTailwind, a
                                 <FaRegPaperPlane />
                             </button>
 
-                            {/* Emoji Picker */}
                             {showEmojiPicker && (
                                 <div className="absolute bottom-[90px] right-5 z-50">
                                     <EmojiPicker

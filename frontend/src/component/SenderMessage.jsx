@@ -5,9 +5,7 @@ import FullScreenViewer from "./FullScreenViewer";
 function SenderMessage({ message }) {
   const { userData } = useSelector((state) => state.user);
   const { messages } = useSelector((state) => state.message);
-
   const scroll = useRef();
-
   const [viewerOpen, setViewerOpen] = useState(false);
   const [viewerMedia, setViewerMedia] = useState(null);
   const [viewerType, setViewerType] = useState("image");

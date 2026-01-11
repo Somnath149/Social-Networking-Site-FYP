@@ -5,18 +5,14 @@ import OnlineUser from '../component/OnlineUser'
 import { useDispatch, useSelector } from 'react-redux'
 import { setSelectedUser } from '../redux/messageSlice'
 import dp1 from "../assets/dp1.jpeg"
-import { MdForum } from "react-icons/md";
-import ThreadTitle from '../../public/ThreadTitle'
-import { div } from 'framer-motion/client'
 import TrendingPostLoop from '../component/TrendingPostLoop'
 import usePrevChatUsers from '../hooks/usePrevChatUsers'
 
 function Messages({ mwidth, m }) {
   const navigate = useNavigate()
   usePrevChatUsers();
-  const { userData } = useSelector(state => state.user)
   const { onlineUsers } = useSelector(state => state.socket)
-  const { prevChatUsers, selectedUser } = useSelector(state => state.message)
+  const { prevChatUsers } = useSelector(state => state.message)
   const dispatch = useDispatch()
 
 
@@ -91,7 +87,6 @@ function Messages({ mwidth, m }) {
                   </div>
                 ))}
 
-              {/* Offline users next */}
               {prevChatUsers
                 ?.filter(user => !onlineUsers.includes(user._id))
                 .map((user, index) => (

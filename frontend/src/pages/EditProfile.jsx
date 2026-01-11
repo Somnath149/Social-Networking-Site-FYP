@@ -33,7 +33,7 @@ function EditProfile() {
 
         const imageURL = URL.createObjectURL(file);
         setTempImage(imageURL);
-        setShowCropper(true); // 🔥 open cropper
+        setShowCropper(true); 
     };
 
     const onCropComplete = (_, croppedAreaPixels) => {
@@ -43,8 +43,8 @@ function EditProfile() {
     const saveCroppedImage = async () => {
         const croppedBlob = await getCroppedImg(tempImage, croppedPixels);
 
-        setbackendImage(croppedBlob); // 🔥 server
-        setfrontendImage(URL.createObjectURL(croppedBlob)); // 🔥 preview
+        setbackendImage(croppedBlob); 
+        setfrontendImage(URL.createObjectURL(croppedBlob)); 
         setShowCropper(false);
     };
 
@@ -134,7 +134,7 @@ function EditProfile() {
                             crop={crop}
                             zoom={zoom}
                             aspect={1}
-                            cropShape="round"     // 🔥 CIRCULAR
+                            cropShape="round"     
                             showGrid={false}
                             onCropChange={setCrop}
                             onZoomChange={setZoom}

@@ -10,8 +10,9 @@ import { serverUrl } from "../App";
 export default function useLoopFeed() {
     const dispatch = useDispatch();
     const { feedPage, feedSeed, hasMore } = useSelector(state => state.loop);
-
+ const {userData}= useSelector(state=>state.user)
     const loadInitialFeed = async () => {
+        if (!userData?._id) return;
         try {
             const res = await axios.get(`${serverUrl}/api/loop/feed?page=1`, {
                 withCredentials: true,
@@ -27,6 +28,7 @@ export default function useLoopFeed() {
     };
 
     const loadMoreFeed = async () => {
+        if (!userData?._id) return;
         if (!hasMore) return;
 
         try {

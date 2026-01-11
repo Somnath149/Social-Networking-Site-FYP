@@ -1,5 +1,4 @@
 import React, { useState } from 'react'
-import dp from "../assets/dp.png"
 import { useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import dp1 from "../assets/dp1.jpeg"

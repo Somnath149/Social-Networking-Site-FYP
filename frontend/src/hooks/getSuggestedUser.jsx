@@ -8,6 +8,7 @@ function getSuggestedUser() {
     const dispatch= useDispatch()
     const {userData}= useSelector(state=>state.user)
     useEffect(()=>{
+        if (!userData?._id) return;
         const fetchUser= async () => {
             try {
                 const result= await axios.get(`${serverUrl}/api/user/suggested`,{withCredentials:true})

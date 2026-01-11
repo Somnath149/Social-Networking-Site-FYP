@@ -27,10 +27,7 @@ function RightSideThread({ setCenterView, setShowOtherUsers, setShowTrends, show
   return (
     <>
       <div className="hidden lg:block h-screen w-[45%] bg-[var(--bg)] overflow-hidden border-l border-gray-800">
-
         <div className="h-full sticky top-0 overflow-y-auto px-4 py-6 space-y-6">
-
-          {/* trends section */}
           {showTrends && (
             <div className="bg-[var(--primary)] rounded-2xl p-4">
               <h2 className={`text-[var(--text)] text-lg font-semibold mb-3`}>
@@ -69,7 +66,6 @@ function RightSideThread({ setCenterView, setShowOtherUsers, setShowTrends, show
             </div>
           )}
 
-          {/* who to follow section */}
           {showOtherUsers &&
             (
               <div className="bg-[var(--primary)] rounded-2xl p-4">

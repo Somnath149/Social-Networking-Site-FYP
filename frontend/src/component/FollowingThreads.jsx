@@ -1,11 +1,7 @@
 import React, { useState } from 'react'
 import Threads from './Threads'
-import Retweets from './Retweets'
-import Quote from './Quote'
-import Comment from './Comment'
-import { useNavigate } from 'react-router-dom'
-import { useDispatch, useSelector } from 'react-redux'
-import useFollowPost from '../hooks/useFollowPost'
+import { useSelector } from 'react-redux'
+
 
 function FollowingThreads() {
 
@@ -30,7 +26,6 @@ function FollowingThreads() {
 ">
       <div className="max-w-2xl mx-auto">
 
-        {/* HEADER */}
         <div className="
       sticky top-0 z-20
       bg-[var(--bg)]/95 backdrop-blur
@@ -45,7 +40,6 @@ function FollowingThreads() {
           </p>
         </div>
 
-        {/* FEED */}
         <div className="py-4">
           <Threads externalThreads={threads} followuser={true} />
         </div>

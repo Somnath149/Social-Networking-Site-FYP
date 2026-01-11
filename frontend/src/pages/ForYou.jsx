@@ -55,7 +55,6 @@ function ForYou() {
     return (
         <div className='lg:w-[50%] w-full bg-[var(--primary)] h-screen overflow-y-scroll p-3'>
 
-            {/* SEARCH INPUT */}
             <div className='w-full mb-4 flex items-center'>
                  <MdOutlineKeyboardBackspace onClick={() => navigate(`/threads`)}
                           className='text-[var(--text)] lg:hidden cursor-pointer lg:hidden w-[26px] h-[26px]' />
