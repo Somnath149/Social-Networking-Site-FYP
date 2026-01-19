@@ -14,6 +14,7 @@ import { FaShare } from 'react-icons/fa6';
 import { addMessage } from '../redux/messageSlice';
 import EmojiPicker from "emoji-picker-react";
 import { BsEmojiSmile } from "react-icons/bs";
+import { toast } from 'react-toastify';
 
 
 function LoopCard({ loop,  loops,setLoops,fromHashTag = false , active}) {
@@ -202,6 +203,17 @@ function LoopCard({ loop,  loops,setLoops,fromHashTag = false , active}) {
     }
   };
 
+  const reportHandler = async (id, type) => {
+            await axios.post(
+                `${serverUrl}/api/user/report`,
+                {
+                    contentId: id,
+                    contentType: type,
+                    reason: "Inappropriate content"
+                }, { withCredentials: true });
+    
+            toast.success("Reported successfully");
+        };
 
   const handleLikeOnDoubleClick = () => {
     setShowHeart(true);
@@ -363,28 +375,63 @@ useEffect(() => {
         <FaHeart className="w-[100px] h-[100px] drop-shadow-2xl text-white" />
       </div>}
 
-      {loop.author?._id === userData._id && <span className='absolute top-[20px] z-[100] left-[10px] '>
-        <FiMoreVertical
-          className="text-white cursor-dot1 w-6 h-6 cursor-pointer rounded-full hover:bg-gray-300 p-1"
-          onClick={(e) => {
-            e.stopPropagation();
-            setShowDelete(prev => !prev)
-          }}
-        />
+      
+       <div className="absolute top-4 left-3 z-[110]">
 
-        {showDelete && loop.author?._id === userData._id && (
-          <div className="absolute left-5px mt-2 bg-[#111] border border-gray-700 rounded-xl shadow-lg px-3 py-2 z-20"
-          >
+  <button
+    onClick={(e) => {
+      e.stopPropagation();
+      setShowDelete((prev) => !prev);
+    }}
+    className="p-2 rounded-full bg-black/20 backdrop-blur-md border border-white/10 text-white hover:bg-black/40 transition-all active:scale-90 shadow-lg"
+  >
+    <FiMoreVertical size={20} />
+  </button>
+
+
+  {showDelete && (
+    <>
+   
+      <div 
+        className="fixed inset-0 z-10" 
+        onClick={() => setShowDelete(false)} 
+      />
+      
+      <div className="absolute left-0 mt-3 w-44 bg-[#121212] border border-white/10 rounded-[1.5rem] shadow-2xl z-20 overflow-hidden animate-in fade-in zoom-in-95 duration-200 origin-top-left">
+        <div className="flex flex-col">
+          
+     
+          {loop.author?._id === userData._id && (
             <button
-              onClick={handleDeleteLoop}
-              className="px-3 py-1 text-sm text-red-500 rounded-xl flex items-center gap-1"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDeleteLoop();
+                setShowDelete(false);
+              }}
+              className="px-4 py-3.5 text-sm font-bold text-red-500 hover:bg-red-500/10 flex items-center gap-3 transition-colors border-b border-white/5"
             >
-              <FaTrash className="w-4 h-4" /> Delete
+              <FaTrash className="w-4 h-4" />
+              Delete Loop
             </button>
-          </div>
-        )}
-      </span>}
+          )}
 
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              reportHandler(loop._id, "Loop");
+              setShowDelete(false);
+            }}
+            className="w-full px-4 py-3.5 flex items-center gap-3 text-sm font-medium text-gray-200 hover:bg-white/5 transition-colors"
+          >
+            <span className="text-lg leading-none">🚩</span>
+            Report Content
+          </button>
+          
+        </div>
+      </div>
+    </>
+  )}
+</div>
 
       <div ref={commentRef} className={`absolute z-[200] bottom-0 w-full h-[500px] shadow-2xl shadow-black
                   p-[10px] rounded-t-4xl bg-[#0e1718] transform transition-transform duration-500 ease-in-out left-0

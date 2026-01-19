@@ -12,6 +12,8 @@ import messageRouter from "./routes/message.route.js"
 import { app, server } from "./routes/socket.js"
 import threadRouter from "./routes/thread.route.js"
 import "./cron/weeklyKing.js";
+import Adminrouter from "./routes/admin.route.js"
+
 
 dotenv.config()
 let port= process.env.PORT || 5000
@@ -30,6 +32,7 @@ app.use("/api/loop", loopRouter)
 app.use("/api/story", storyRouter)
 app.use("/api/message", messageRouter)
 app.use("/api/thread", threadRouter)
+app.use("/api/admin", Adminrouter)
 
 app.get('/',(req,res)=>{
     res.send("hello")
@@ -37,7 +40,7 @@ app.get('/',(req,res)=>{
 
 const startServer = async () => {
   try {
-    await connentDB();   // ✅ wait for MongoDB first
+    await connentDB();  
 
     server.listen(port, () => {
       console.log("MongoDB connected");

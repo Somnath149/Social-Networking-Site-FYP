@@ -8,6 +8,7 @@ import { setProfileData, setUserData } from '../redux/userSlice'
 import axios from 'axios'
 import Cropper from "react-easy-crop";
 import { getCroppedImg } from '../../public/getCroppedImg'
+import { toast } from 'react-toastify'
 
 function EditProfile() {
     const [loading, setLoading] = useState(false)
@@ -69,8 +70,13 @@ function EditProfile() {
             dispatch(setUserData(result.data))
             navigate(`/profile/${userData.userName}`)
         } catch (error) {
-            console.log(error)
-        }
+    if (error.response && error.response.data?.message) {
+        toast.error(error.response.data.message);
+    } else {
+        toast.error("Something went wrong!");
+    }
+}
+
         finally {
             setLoading(false)
         }

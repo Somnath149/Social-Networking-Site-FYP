@@ -3,7 +3,9 @@ import isAuth from "../middlewares/isAuth.js"
 import { upload } from "../middlewares/multer.js"
 import { comment, getAllthreads,  getMyRetweets, getThreadsUserCommented,
       like, quoteTweet, retweet, uploadThread ,
-     deleteThread} from "../controllers/thread.controller.js"
+     deleteThread,
+     getFollowingThreadsActivity,
+     } from "../controllers/thread.controller.js"
 
 const threadRouter =express.Router()
 
@@ -24,5 +26,6 @@ threadRouter.post("/retweet/:threadId", isAuth, retweet);
 threadRouter.get("/userCommented/:userId", isAuth, getThreadsUserCommented);
 threadRouter.post("/quote/:threadId", isAuth, quoteTweet);
 threadRouter.delete("/delete/:threadId", isAuth, deleteThread);
+threadRouter.get("/getFollowingThreadsActivity",isAuth,getFollowingThreadsActivity)
 
 export default threadRouter

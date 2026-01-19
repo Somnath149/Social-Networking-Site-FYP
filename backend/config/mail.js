@@ -5,7 +5,7 @@ dotenv.config()
 const transporter = nodemailer.createTransport({
   service: "Gmail",
   port: 465,
-  secure: true, // true for 465, false for other ports
+  secure: true, 
   auth: {
     user: process.env.EMAIL,
     pass: process.env.APP_PASSWORD,
@@ -23,9 +23,9 @@ export const sendMail= async (to,otp) => {
 
 export const usersMail = async ({ from, userName, issue }) => {
   await transporter.sendMail({
-    from: `"Psync Support" <${process.env.EMAIL}>`,
-    to: process.env.EMAIL, // admin/support email
-    replyTo: from, // user ko reply kar sake
+    from: `"${userName || from} via Psync Support" <${process.env.EMAIL}>`,
+    to: process.env.EMAIL, 
+    replyTo: from,
     subject: `Support Request from ${userName || from}`,
     html: `
       <h3>New Support Request</h3>
@@ -37,3 +37,50 @@ export const usersMail = async ({ from, userName, issue }) => {
   });
 };
 
+export const contentRemovedMail = async ({ to, userName, contentType, reason }) => {
+  await transporter.sendMail({
+    from: `"Psync Moderation" <${process.env.EMAIL}>`,
+    to,
+    subject: "Content Removed Notification",
+    html: `
+      <h3>Hello ${userName}</h3>
+      <p>Your <b>${contentType}</b> was removed due to community guideline violation.</p>
+      <p><b>Reason:</b> ${reason}</p>
+      <p>If you think this is a mistake, contact support.</p>
+      <br/>
+      <p>— Psync Team</p>
+    `
+  });
+};
+
+export const userBlockMail = async ({ to, userName, reason }) => {
+  await transporter.sendMail({
+    from: `"Psync Moderation" <${process.env.EMAIL}>`,
+    to,
+    subject: "Your Account Has Been Blocked",
+    html: `
+      <h3>Hello ${userName || "User"}</h3>
+      <p>Your account has been <b>blocked</b> due to violation of our community guidelines.</p>
+      <p><b>Reason:</b> ${reason}</p>
+      <p>If you believe this is a mistake, please contact support.</p>
+      <br/>
+      <p>— Psync Team</p>
+    `
+  });
+};
+
+export const userUnblockMail = async ({ to, userName }) => {
+  await transporter.sendMail({
+    from: `"Psync Moderation" <${process.env.EMAIL}>`,
+    to,
+    subject: "Your Account Has Been Unblocked",
+    html: `
+      <h3>Hello ${userName || "User"}</h3>
+      <p>Good news 🎉</p>
+      <p>Your account has been <b>unblocked</b>. You can now access all features again.</p>
+      <p>Please follow our community guidelines to avoid future restrictions.</p>
+      <br/>
+      <p>— Psync Team</p>
+    `
+  });
+};

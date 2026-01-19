@@ -1,3 +1,5 @@
+// 
+
 import React, { useState } from 'react'
 import axios from 'axios'
 import { serverUrl } from '../App'
@@ -5,24 +7,29 @@ import { useNavigate } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
 import { setUserData } from '../redux/userSlice'
 
-const ChatIcon = () => (
-    <svg className="w-16 h-16 mb-4 text-purple-400 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.03C4.342 16.568 5 15.7 5 14a7 7 0 0114 0c0 1.5-1 2-1 2.5V14a5 5 0 00-5-5h-4a5 5 0 00-5 5v2.5M12 21a9 9 0 100-18 9 9 0 000 18z"></path>
-    </svg>
+// Social Identity Icon (Matching the SignIn page)
+const PsyncLogo = () => (
+    <div className="relative mb-4">
+        <div className="absolute inset-0 bg-purple-500 blur-2xl opacity-20 animate-pulse"></div>
+        <svg className="w-12 h-12 relative z-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M13 10V3L4 14h7v7l9-11h-7z" />
+        </svg>
+    </div>
 )
 
 function Signup() {
-
     const [name, setName] = useState('')
     const [userName, setuserName] = useState('')
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [err, setErr] = useState('')
+    const [loading, setLoading] = useState(false)
+    
     const navigate = useNavigate()
     const dispatch = useDispatch()
-    const [loading, setLoading] = useState(false)
 
-    const handleSignUp = async () => {
+    const handleSignUp = async (e) => {
+        if (e) e.preventDefault();
         setErr('')
         setLoading(true)
         try {
@@ -32,131 +39,124 @@ function Signup() {
                 { withCredentials: true }
             )
             dispatch(setUserData({ ...result.data.user, streamToken: result.data.streamToken }));
+            navigate('/');
         } catch (error) {
-            if (error.response) {
-                setErr(error.response?.data?.message || 'Something went wrong.')
-            } else {
-                console.error(error)
-                setErr('Network error, please try again.')
-            }
-        }
-        finally {
+            setErr(error.response?.data?.message || 'Something went wrong.')
+        } finally {
             setLoading(false)
         }
     }
 
     return (
-        <div className="w-full min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black flex flex-col justify-center items-center p-4 sm:p-6">
-             <style jsx global>{`
-                /* Keyframes for the card scale-in */
-                @keyframes scaleIn {
-                    from { transform: scale(0.95); opacity: 0; }
-                    to { transform: scale(1); opacity: 1; }
+        <div className="w-full min-h-screen flex items-center justify-center bg-[#050505] text-white selection:bg-purple-500 p-4 sm:p-6">
+            <style dangerouslySetInnerHTML={{ __html: `
+                @keyframes slideUp {
+                    from { opacity: 0; transform: translateY(20px); }
+                    to { opacity: 1; transform: translateY(0); }
                 }
-                .animate-scaleIn { animation: scaleIn 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
-            `}</style>
-            <div className="w-full max-w-5xl h-auto lg:h-[650px] bg-white flex rounded-2xl overflow-hidden shadow-2xl border border-gray-700 transform scale-95 opacity-0 animate-scaleIn">
+                .animate-slideUp { animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+                
+                .social-input {
+                    background: #121212;
+                    border: 1px solid #222;
+                    transition: all 0.2s ease;
+                }
+                .social-input:focus {
+                    background: #1a1a1a;
+                    border-color: #a855f7;
+                    box-shadow: 0 0 0 1px #a855f7;
+                }
+            `}} />
 
-                <div className="w-full lg:w-1/2 flex flex-col justify-center p-8 sm:p-12 md:p-16 gap-6">
-                    <h2 className="text-4xl font-extrabold text-gray-900 mb-2">Join Psync Today</h2>
-                    <p className="text-gray-500 mb-4 text-sm">Create your new account in a few simple steps.</p>
+            {/* Background Mesh (Same as SignIn for brand consistency) */}
+            <div className="fixed top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none">
+                <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-purple-900/10 blur-[120px] rounded-full"></div>
+                <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-900/10 blur-[120px] rounded-full"></div>
+            </div>
 
-                    <div className="flex flex-col gap-5">
-             
-                        <div>
-                            <label htmlFor="name" className="block mb-1 text-sm font-semibold text-gray-700">Full Name</label>
+            <div className="w-full max-w-[480px] z-10 animate-slideUp">
+                {/* Brand Header */}
+                <div className="flex flex-col items-center mb-8">
+                    <PsyncLogo />
+                    <h1 className="text-3xl font-black tracking-tighter italic">JOIN PSYNC</h1>
+                    <p className="text-gray-500 text-sm mt-2 text-center">Step into the new era of secure communication.</p>
+                </div>
+
+                {/* Signup Card */}
+                <div className="bg-[#0f0f0f] border border-[#1f1f1f] rounded-[2.5rem] p-8 shadow-2xl">
+                    <form className="space-y-4" onSubmit={handleSignUp}>
+                        
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="space-y-1.5">
+                                <label className="text-[11px] uppercase tracking-widest font-bold text-gray-500 ml-1">Full Name</label>
+                                <input
+                                    type="text" value={name} onChange={(e) => setName(e.target.value)}
+                                    className="w-full social-input rounded-2xl px-5 py-3.5 outline-none placeholder:text-gray-700"
+                                    placeholder="John Doe" required
+                                />
+                            </div>
+                            <div className="space-y-1.5">
+                                <label className="text-[11px] uppercase tracking-widest font-bold text-gray-500 ml-1">Username</label>
+                                <input
+                                    type="text" value={userName} onChange={(e) => setuserName(e.target.value)}
+                                    className="w-full social-input rounded-2xl px-5 py-3.5 outline-none placeholder:text-gray-700"
+                                    placeholder="johndoe" required
+                                />
+                            </div>
+                        </div>
+
+                        <div className="space-y-1.5">
+                            <label className="text-[11px] uppercase tracking-widest font-bold text-gray-500 ml-1">Email Address</label>
                             <input
-                                id="name"
-                                type="text"
-                                value={name}
-                                onChange={(e) => setName(e.target.value)}
-                                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 transition duration-300 focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-purple-600 hover:border-gray-400"
-                                placeholder="Enter your full name"
+                                type="email" value={email} onChange={(e) => setEmail(e.target.value)}
+                                className="w-full social-input rounded-2xl px-5 py-3.5 outline-none placeholder:text-gray-700"
+                                placeholder="name@example.com" required
                             />
                         </div>
 
-                        <div>
-                            <label htmlFor="userName" className="block mb-1 text-sm font-semibold text-gray-700">Username</label>
+                        <div className="space-y-1.5">
+                            <label className="text-[11px] uppercase tracking-widest font-bold text-gray-500 ml-1">Secure Password</label>
                             <input
-                                id="userName"
-                                type="text"
-                                value={userName}
-                                onChange={(e) => setuserName(e.target.value)}
-                                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 transition duration-300 focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-purple-600 hover:border-gray-400"
-                                placeholder="Choose a username"
+                                type="password" value={password} onChange={(e) => setPassword(e.target.value)}
+                                className="w-full social-input rounded-2xl px-5 py-3.5 outline-none placeholder:text-gray-700"
+                                placeholder="••••••••" required
                             />
                         </div>
 
-                        <div>
-                            <label htmlFor="email" className="block mb-1 text-sm font-semibold text-gray-700">Email</label>
-                            <input
-                                id="email"
-                                type="email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 transition duration-300 focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-purple-600 hover:border-gray-400"
-                                placeholder="you@example.com"
-                            />
-                        </div>
-
-                        <div>
-                            <label htmlFor="password" className="block mb-1 text-sm font-semibold text-gray-700">Password</label>
-                            <input
-                                id="password"
-                                type="password"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 transition duration-300 focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-purple-600 hover:border-gray-400"
-                                placeholder="Create a password"
-                            />
-                        </div>
-                    {err && <p className="text-red-600  text-sm font-semibold mt-2">{err}</p>}
-                    </div>
-
-                    <button
-                        type="button"
-                        disabled={loading}
-                        className={`w-full bg-gray-900 text-white font-bold py-3 rounded-lg flex justify-center items-center gap-2 transition duration-300 shadow-md mt-4 ${
-                            loading 
-                                ? 'opacity-70 cursor-not-allowed' 
-                                : 'hover:bg-gray-800 hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-gray-700 focus:ring-opacity-50'
-                        }`}
-                        onClick={handleSignUp}
-                    >
-                        {loading ? (
-                            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                        ) : (
-                            'Sign Up'
+                        {err && (
+                            <p className="text-red-400 text-xs font-bold text-center bg-red-400/10 py-3 rounded-xl border border-red-400/20">
+                                {err}
+                            </p>
                         )}
-                    </button>
 
-                    <p className="text-center text-gray-600 text-sm mt-2">
-                        Already have an account?{' '}
-                        <span
-                            onClick={() => navigate('/signin')}
-                            className="text-gray-900 font-bold cursor-pointer hover:underline transition duration-200"
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="w-full bg-white text-black font-black py-4 rounded-2xl transition-all active:scale-[0.98] hover:bg-gray-200 disabled:opacity-50 flex justify-center items-center gap-2 mt-4 shadow-lg shadow-white/5"
                         >
-                            Sign In
-                        </span>
-                    </p>
-                </div>
+                            {loading ? (
+                                <div className="w-5 h-5 border-2 border-black/20 border-t-black rounded-full animate-spin"></div>
+                            ) : "Create Account"}
+                        </button>
+                    </form>
 
-                <div className="hidden lg:flex w-1/2 bg-gray-900 text-white flex-col justify-center items-center p-10 rounded-tr-2xl rounded-br-2xl relative overflow-hidden">
-                    
-                    <div className="absolute inset-0 bg-cover bg-center opacity-10" style={{backgroundImage: "url('https://source.unsplash.com/random/800x600?abstract,grid')"}}></div>
-                    <div className="absolute inset-0 bg-gradient-to-br from-gray-900 to-black opacity-80 z-0"></div>
-
-                    <div className="z-10 flex flex-col items-center text-center">
-                        <ChatIcon />
-                        <h3 className="text-3xl font-bold mb-4">The Psync Experience</h3>
-                        <p className="text-xl font-light max-w-sm text-center italic opacity-90">
-                            “Connect, Share, and Stay Informed Safely”
-                        </p>
-                        <p className="mt-4 text-sm max-w-xs text-gray-300">
-                             A new era of secure and reliable communication starts here.
+                    {/* Footer */}
+                    <div className="mt-8 text-center pt-6 border-t border-[#1f1f1f]">
+                        <p className="text-gray-500 text-sm font-medium">
+                            Part of the network?{' '}
+                            <span
+                                onClick={() => navigate('/signin')}
+                                className="text-white font-bold cursor-pointer hover:text-purple-400 transition underline underline-offset-4"
+                            >
+                                Sign In here
+                            </span>
                         </p>
                     </div>
                 </div>
+
+                <p className="mt-8 text-center text-gray-600 text-[10px] uppercase tracking-[0.2em]">
+                    Psync Protocol © 2026
+                </p>
             </div>
         </div>
     )

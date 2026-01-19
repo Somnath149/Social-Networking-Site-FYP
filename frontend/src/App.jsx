@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
+import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import SignUp from './pages/signup'
 import SignIn from './pages/SignIn'
 import ForgotPassword from './pages/ForgotPassword'
@@ -45,6 +45,9 @@ import "react-toastify/dist/ReactToastify.css";
 import { addMessage } from './redux/messageSlice'
 import useFollowPost from './hooks/useFollowPost'
 import NotFound from './pages/NotFound'
+import AdminUsers from './pages/AdminUsers'
+import Blocked from './pages/Blocked'
+
 
 
 export const serverUrl = "http://localhost:8000"
@@ -52,8 +55,10 @@ function App() {
   const { socket } = useSelector(state => state.socket)
   const { userData, notificationData } = useSelector(state => state.user)
   const dispatch = useDispatch()
+  const navigate = useNavigate()
   const [loading, setLoading] = useState(true);
   const location = useLocation()
+
 
   getCurrentUser()
   getSuggestedUser()
@@ -65,6 +70,8 @@ function App() {
   getAllThreads()
   useFollowPost()
   useTrendingPost()
+
+  
 
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme") || "theme-default";
@@ -196,6 +203,12 @@ function App() {
 
   }, [socket, dispatch, location1.pathname]);
 
+  // useEffect(() => {
+  //   if (userData?.role === "admin" && location.pathname === "/") {
+  //     navigate("/admin", { replace: true });
+  //   }
+  // }, [userData, location.pathname, navigate]);
+
 
   if (loading) {
     return (
@@ -204,6 +217,16 @@ function App() {
       </div>
     );
   }
+
+  if (userData?.isBlocked) {
+  return (
+    <>
+      <Blocked />
+      <ToastContainer />
+      <AdvancedCursor />
+    </>
+  );
+}
 
   return (
     <div className="relative w-full h-screen overflow-hidden">
@@ -230,7 +253,11 @@ function App() {
         <Route path="/plhashtag/:tag" element={userData ? <PostLoopTag /> : <Navigate to={"/signin"} />} />
         <Route path="/trendingpage" element={userData ? <TrendingPostLoop /> : <Navigate to={"/signin"} />} />
         <Route path="/setting" element={userData ? <Settings /> : <Navigate to={"/signin"} />} />
-        {/* <Route path="/admin" element={userData ? <Admin /> : <Navigate to={"/signin"} />} /> */}
+        <Route path="/admin" element={userData && userData.role === "admin" ? ( <AdminUsers />) : (
+      <Navigate to={userData ? "/" : "/signin"} />
+    )
+  } 
+/>
       </Routes>
 
       <ToastContainer

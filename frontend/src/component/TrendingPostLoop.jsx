@@ -72,7 +72,7 @@ function TrendingPostLoop({ tp, show }) {
                         onClick={() => navigate(`/threads`)}
                         className="text-[25px] mr-0 font-bold text-gray-400 flex gap-0.5 select-none"
                     >
-                        {["T", "H", "R", "E", "A", "D"].map((l, i) => (
+                        {["V", "I", "B", "E", "L", "Y"].map((l, i) => (
                             <span
                                 key={i}
                                 className="transition-all duration-300 shake-hover

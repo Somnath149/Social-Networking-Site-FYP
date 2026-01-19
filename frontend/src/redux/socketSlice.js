@@ -9,11 +9,10 @@ const socketSlice = createSlice({
     reducers: {
         setSocket: (state, action) => {
             state.socket = action.payload
-            //console.log("Inside reducer - Socket:", action.payload);
         },
         setOnlineUsers: (state, action) => {
             state.onlineUsers = action.payload
-           // console.log("Inside reducer - Online Uses:", action.payload);
+          
         },
         
     }

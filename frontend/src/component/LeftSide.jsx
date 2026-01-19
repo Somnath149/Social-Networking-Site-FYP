@@ -50,7 +50,7 @@ function LeftSide() {
 <div className='flex gap-3 items-center'>
 
  <div className='relative flex flex-col items-center group cursor-pointer' onClick={() => navigate(`/upload`)}>
-                <FaPlusSquare className='text-white cursor-dot1 w-[20px] h-[20px] transition-all duration-300 transform
+                <FaPlusSquare className='text-[var(--text)] cursor-dot1 w-[20px] h-[20px] transition-all duration-300 transform
                     group-hover:scale-125 group-hover:-translate-y-1 group-hover:text-blue-400 
                     group-hover:drop-shadow-[0_0_10px_#1DA1F2]'/>
                

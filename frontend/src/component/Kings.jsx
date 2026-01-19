@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 
 const Kings = ({threadTailwind}) => {
   const { users, loading } = useAllUserScore(); 
-  const allUsers = useSelector(state => state.user.allUsers); 
+  const allUsers = useSelector(state => state.admin.allUsers); 
 const navigate = useNavigate()
 
 

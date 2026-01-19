@@ -55,7 +55,7 @@ export const like = async (req, res) => {
             loop.likes = loop.likes.filter(id => id.toString() != req.userId.toString())
         } else {
             loop.likes.push(req.userId)
-            if (loop.author._id != req.userId) {
+            if (loop.author.toString() !== req.userId.toString()) {
                 const notification = await Notification.create({
                     sender: req.userId,
                     receiver: loop.author._id,
@@ -96,7 +96,7 @@ export const comment = async (req, res) => {
             message
         })
 
-        if (loop.author._id != req.userId) {
+        if (loop.author.toString() !== req.userId.toString()) {
             const notification = await Notification.create({
                 sender: req.userId,
                 receiver: loop.author._id,
@@ -259,7 +259,6 @@ export const addView = async (req, res) => {
       return res.status(404).json({ message: "Loop not found" });
     }
 
-    // 🔥 REALTIME VIEW UPDATE
     io.emit("loopViewed", loop);
 
     return res.status(200).json(loop);

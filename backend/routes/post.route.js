@@ -1,6 +1,4 @@
 import express from "express"
-import { signIn, signOut, signUp } from "../controllers/auth.controller.js"
-import { editProfile, getCurrentUser, getProfile, suggestedUsers } from "../controllers/user.controller.js"
 import isAuth from "../middlewares/isAuth.js"
 import { upload } from "../middlewares/multer.js"
 import { comment, deleteComment, deletePost, getAllPosts, getAllTrending, getPostsByTag, getTodayTrending, like, saved, uploadPost } from "../controllers/post.controller.js"

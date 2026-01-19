@@ -15,6 +15,7 @@ import { FiMoreVertical } from 'react-icons/fi';
 import { FaTrash } from 'react-icons/fa6';
 import EmojiPicker from "emoji-picker-react";
 import { BsEmojiSmile } from "react-icons/bs";
+import { toast } from 'react-toastify';
 
 function Post({ post, disableProfileClick, Ssrc, onPostClick, ExploreTailwind, active, feed, disableDelete, posts,
     setPosts, }) {
@@ -52,26 +53,26 @@ function Post({ post, disableProfileClick, Ssrc, onPostClick, ExploreTailwind, a
         setMessage(prev => prev + emojiData.emoji);
     };
 
-   const handleLike = async () => {
-  try {
-    const result = await axios.get(`${serverUrl}/api/post/like/${post._id}`, { withCredentials: true });
-    const updatedPost = result.data;
+    const handleLike = async () => {
+        try {
+            const result = await axios.get(`${serverUrl}/api/post/like/${post._id}`, { withCredentials: true });
+            const updatedPost = result.data;
 
-    const updatedPosts = postData.map(p =>
-      p._id === post._id
-        ? {
-            ...p, // keep old data
-            likes: updatedPost.likes, // update only likes
-            shares: updatedPost.shares, // optional: update shares if needed
-          }
-        : p
-    );
+            const updatedPosts = postData.map(p =>
+                p._id === post._id
+                    ? {
+                        ...p, // keep old data
+                        likes: updatedPost.likes, // update only likes
+                        shares: updatedPost.shares, // optional: update shares if needed
+                    }
+                    : p
+            );
 
-    dispatch(setPostData(updatedPosts));
-  } catch (error) {
-    console.error("Like failed:", error);
-  }
-};
+            dispatch(setPostData(updatedPosts));
+        } catch (error) {
+            console.error("Like failed:", error);
+        }
+    };
 
 
     const handleComment = async () => {
@@ -86,16 +87,16 @@ function Post({ post, disableProfileClick, Ssrc, onPostClick, ExploreTailwind, a
                 );
                 setPosts(updatedPosts);
             }
-        
+
             else {
-               const updatedPosts = postData.map(p =>
-  p._id === post._id
-    ? { 
-        ...p, 
-        comments: updatedPost.comments // update comments if needed
-      }
-    : p
-);
+                const updatedPosts = postData.map(p =>
+                    p._id === post._id
+                        ? {
+                            ...p,
+                            comments: updatedPost.comments // update comments if needed
+                        }
+                        : p
+                );
 
                 dispatch(setPostData(updatedPosts));
             }
@@ -165,9 +166,6 @@ function Post({ post, disableProfileClick, Ssrc, onPostClick, ExploreTailwind, a
         }
     };
 
-
-
-
     useEffect(() => {
         if (!socket) return;
 
@@ -217,6 +215,17 @@ function Post({ post, disableProfileClick, Ssrc, onPostClick, ExploreTailwind, a
         });
     };
 
+    const reportHandler = async (id, type) => {
+        await axios.post(
+            `${serverUrl}/api/user/report`,
+            {
+                contentId: id,
+                contentType: type,
+                reason: "Inappropriate content"
+            }, { withCredentials: true });
+
+        toast.success("Reported successfully");
+    };
 
     return (
         <div className={`
@@ -249,51 +258,71 @@ function Post({ post, disableProfileClick, Ssrc, onPostClick, ExploreTailwind, a
                         </div>
                     </div>
 
-                    {disableDelete && post.author?._id === userData._id && <span className='relative mr-0'>
-                        <FiMoreVertical
-                            className="w-6 h-6 text-[var(--text)]
-             cursor-pointer rounded-full
-             hover:bg-gray-200/30
-             transition-all p-1"
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                setShowDelete(prev => !prev);
-                            }}
-                        />
 
 
-                        {showDelete && (
-                            <div
-                                className="absolute right-0 mt-2 w-36
-               bg-[#0f0f0f]
-               border border-gray-700
-               rounded-xl shadow-2xl
-               overflow-hidden z-50
-               animate-fadeIn"
-                            >
-                                <button
-                                    onClick={handleDeletePost}
-                                    className="w-full px-4 py-3
-                 flex items-center gap-2
-                 text-sm text-red-500
-                 hover:bg-red-500/10
-                 transition-all"
-                                >
-                                    <FaTrash className="w-4 h-4" />
-                                    Delete Post
-                                </button>
-                            </div>
-                        )}
-
-                    </span>}
+                    <div className='flex items-center gap-3'>
 
 
+                        {userData._id != post.author._id &&
+                            <FollowButton tailwind={'px-4 md:px-5 py-1 md:py-2 rounded-2xl text-sm md:text-base bg-black text-white hover:bg-gray-800 transition'}
+                                targetUserId={post.author._id} />}
 
-                    {userData._id != post.author._id &&
-                        <FollowButton tailwind={'px-4 md:px-5 py-1 md:py-2 rounded-2xl text-sm md:text-base bg-black text-white hover:bg-gray-800 transition'}
-                            targetUserId={post.author._id} />}
+                        <span className="relative z-112">
+                         
+                            <FiMoreVertical
+                                className="w-8 h-8 text-[var(--text)] cursor-pointer rounded-full hover:bg-gray-500/10 transition-all p-1.5"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    setShowDelete((prev) => !prev);
+                                }}
+                            />
+
+                            {showDelete && (
+                                <>
+                                
+                                    <div
+                                        className="fixed inset-0 z-40"
+                                        onClick={() => setShowDelete(false)}
+                                    />
+
+                                    <div className="absolute right-0 mt-2 w-48 bg-[var(--bg)] border border-white/10 
+                                    rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.5)] overflow-hidden z-50 animate-in 
+                                    fade-in zoom-in-95 duration-200 origin-top-right">
+
+                                        <button
+                                            onClick={() => {
+                                                reportHandler(post._id, "Post");
+                                                setShowDelete(false);
+                                            }}
+                                            className="w-full px-4 py-3.5 flex items-center gap-3 text-sm font-medium
+           text-[var(--text)] hover:bg-[var(--bg)]/5 transition-all active:bg-[var(--bg)]/10"
+                                        >
+                                            <span className="text-lg">🚩</span>
+                                            Report Post
+                                        </button>
+
+                                        <div className="h-[1px] bg-white/5 mx-2" />
+
+                                        {
+                                            userData?._id === post?.author?._id && <button
+                                                onClick={() => {
+                                                    handleDeletePost();
+                                                    setShowDelete(false);
+                                                }}
+                                                className="w-full px-4 py-3.5 flex items-center gap-3 text-sm font-bold
+                                                 text-red-500 hover:bg-red-500/10 transition-all active:bg-red-500/20"
+                                            >
+                                                <FaTrash className="w-4 h-4" />
+                                                Delete Post
+                                            </button>
+                                        }
 
 
+                                    </div>
+                                </>
+                            )}
+                        </span>
+                    </div>
                 </div>
 
             </>}
@@ -303,7 +332,7 @@ function Post({ post, disableProfileClick, Ssrc, onPostClick, ExploreTailwind, a
                     <>
                         {post.media.endsWith(".mp4") ? (
                             <div className="w-full max-w-[500px] flex items-center justify-center">
-                                <VideoPlayer media={post.media} active={active} feed={feed} ExploreTailwind={ExploreTailwind}/>
+                                <VideoPlayer media={post.media} active={active} feed={feed} ExploreTailwind={ExploreTailwind} />
                             </div>
                         ) : (
                             <div className="w-full h-auto flex items-center justify-center">
@@ -312,6 +341,7 @@ function Post({ post, disableProfileClick, Ssrc, onPostClick, ExploreTailwind, a
                                     alt=""
                                     className={`w-full min-w-full h-auto object-cover rounded-2xl`}
                                 />
+
                             </div>
                         )}
                     </>
@@ -324,6 +354,7 @@ function Post({ post, disableProfileClick, Ssrc, onPostClick, ExploreTailwind, a
 
                 <div className='w-full h-[60px]  flex justify-between items-center px-[20px] mt-[10px]'>
                     <div className='flex justify-center items-center gap-[10px]'>
+
                         <div className='flex justify-center items-center gap-[5px] cursor-dot1' onClick={handleLike}>
                             {!post.likes.includes(userData._id) && <FaRegHeart className={`w-[25px] text-[var(--text)] cursor-pointer h-[25px]
                                  ${active ? "text-[var(--text)]" : "text-[var(--text)]"} `} />}

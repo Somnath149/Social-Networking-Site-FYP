@@ -4,15 +4,17 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import NotificationCard from '../component/NotificationCard'
 import { serverUrl } from '../App'
-import { setNotificationData } from '../redux/userSlice'
+import { clearAllNotifications, setNotificationData } from '../redux/userSlice'
 import axios from 'axios'
 import { motion } from "framer-motion"
+import { toast } from 'react-toastify'
 
 function Notifications({ threadTailwind }) {
 
     const navigate = useNavigate()
     const dispatch = useDispatch()
     const { notificationData } = useSelector(state => state.user)
+
     const ids = notificationData.map((n) => n._id)
 
     const markAsRead = async () => {
@@ -27,6 +29,20 @@ function Notifications({ threadTailwind }) {
             console.log(error)
         }
     }
+
+    const clearNotifications = async () => {
+        try {
+       
+            await axios.post(`${serverUrl}/api/user/clearAllNotifications`, {}, { withCredentials: true });
+
+            dispatch(clearAllNotifications());
+
+            toast.success("All notifications cleared");
+        } catch (error) {
+            console.log(error);
+            toast.error("Failed to clear notifications");
+        }
+    };
 
     const fetchNotification = async () => {
         try {
@@ -51,9 +67,26 @@ function Notifications({ threadTailwind }) {
                     onClick={() => navigate(`/`)}
                     className='text-[var(--text)] cursor-pointer w-[25px] h-[25px]'
                 />
-                <h1 className='text-[var(--text)] text-[20px] font-semibold'>Notifications</h1>
+                <div className="flex justify-between items-center px-4 py-2">
+                    <h1 className="text-[var(--text)] text-[20px] font-semibold">Notifications</h1>
+                    {notificationData.length > 0 && (
+                        <button
+                            onClick={clearNotifications}
+                            className="text-sm bg-red-500 text-white px-3 py-1 rounded"
+                        >
+                            Clear All
+                        </button>
+                    )}
+                </div>
             </div>
-
+ {notificationData.length > 0 && (
+                        <button
+                            onClick={clearNotifications}
+                            className="text-sm bg-red-500 text-white px-3 py-1 rounded"
+                        >
+                            Clear All
+                        </button>
+                    )}
             {threadTailwind && <h1 className='text-[var(--text)] text-[20px] p-[20px] font-semibold'>Notifications</h1>}
             {notificationData?.length === 0 && (
                 <div className="flex flex-col items-center justify-center py-10 text-center">

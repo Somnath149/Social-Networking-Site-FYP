@@ -38,7 +38,7 @@ const threadSlice = createSlice({
 
         setFollowThreads: (state, action) => {
             state.followThread = action.payload;
-            console.log("Inside reducer - all Data:", action.payload);
+          
         },
 
         updateLikes: (state, action) => {
@@ -64,7 +64,7 @@ const threadSlice = createSlice({
 
         setCommentedThreads: (state, action) => {
             state.commentedThreads = action.payload;
-          //  console.log("Inside reducer - commented threads Data:", action.payload);
+   
         },
 
 
@@ -91,7 +91,7 @@ const threadSlice = createSlice({
             } else {
                 state.threads.unshift(action.payload);
             }
-          //  console.log("Inside reducer - quote Data:", action.payload);
+  
         },
 
     }

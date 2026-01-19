@@ -38,11 +38,16 @@ export const sendMessage = async (req, res) => {
 
     const receiverSocketId = getSocketId(receiverId)
 
+
+    const populatedMessage = await Message.findById(newMessage._id)
+      .populate("sender", "userName profileImage");
+
     if (receiverSocketId) {
-      io.to(receiverSocketId).emit("newMessage", newMessage)
+      io.to(receiverSocketId).emit("newMessage", populatedMessage);
     }
 
-    return res.status(200).json(newMessage);
+    return res.status(200).json(populatedMessage);
+
   } catch (error) {
     console.error("sendMessage error:", error);
     return res.status(500).json({ message: `send Message error = ${error.message}` });
@@ -51,34 +56,39 @@ export const sendMessage = async (req, res) => {
 
 export const getAllMessage = async (req, res) => {
   try {
-    const senderId = req.userId
-    const receiverId = req.params.receiverId
+    const senderId = req.userId;
+    const receiverId = req.params.receiverId;
 
-    let conversation = await Conversation.findOne({
+    const conversation = await Conversation.findOne({
       participants: { $all: [senderId, receiverId] }
     }).populate({
       path: "messages",
-      populate: {
-        path: "post",
-        model: "Post"
-      }
-    })
-    .populate({
-      path: "messages",
-      populate: {
-        path: "loop",
-        model: "Loop"
-      }
+      populate: [
+        {
+          path: "sender",
+          select: "userName profileImage"
+        },
+        {
+          path: "post",
+          model: "Post"
+        },
+        {
+          path: "loop",
+          model: "Loop",
+          populate: {
+            path: "author",
+            select: "userName profileImage"
+          }
+        }
+      ]
     });
 
-
-    return res.status(200).json(conversation?.messages)
-
+    return res.status(200).json(conversation?.messages || []);
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
   }
-  catch (error) {
-    return res.status(500).json({ message: `get Message error= ${error}` })
-  }
-}
+};
+
 
 
 export const getPrevUserChats = async (req, res) => {
@@ -88,8 +98,8 @@ export const getPrevUserChats = async (req, res) => {
     const conversations = await Conversation.find({
       participants: currentUserId
     })
-    .populate("participants", "userName profileImage")
-    .sort({ updatedAt: -1 });
+      .populate("participants", "userName profileImage")
+      .sort({ updatedAt: -1 });
 
     const userMap = {};
     conversations.forEach(conv => {
@@ -124,7 +134,7 @@ export const sendPostMessage = async (req, res) => {
       sender: senderId,
       receiver: receiverId,
       post: postId,
-      message: "",  
+      message: "",
     });
 
     let conversation = await Conversation.findOne({
@@ -140,15 +150,19 @@ export const sendPostMessage = async (req, res) => {
       conversation.messages.push(newMessage._id);
       await conversation.save();
     }
-
-     const populatedMessage = await newMessage.populate("post");
-  
     const receiverSocketId = getSocketId(receiverId);
+
+    const populatedMessage = await Message.findById(newMessage._id)
+      .populate("sender", "userName profileImage")
+      .populate({
+        path: "post",
+        model: "Post"
+      });
+
     if (receiverSocketId) {
       io.to(receiverSocketId).emit("newMessage", populatedMessage);
-
     }
-   
+
     return res.status(200).json(populatedMessage);
 
 
@@ -173,7 +187,7 @@ export const sendLoopMessage = async (req, res) => {
       sender: senderId,
       receiver: receiverId,
       loop: loopId,
-      message: "",   
+      message: "",
     });
 
     let conversation = await Conversation.findOne({
@@ -189,22 +203,27 @@ export const sendLoopMessage = async (req, res) => {
       conversation.messages.push(newMessage._id);
       await conversation.save();
     }
-     const populatedMessage = await newMessage.populate({
-  path: "loop",
-  populate: {
-    path: "author",
-    model: "User",
-    select: "userName profileImage"
-  }
-});
 
     const receiverSocketId = getSocketId(receiverId);
+
+    const populatedMessage = await Message.findById(newMessage._id)
+      .populate("sender", "userName profileImage")
+      .populate({
+        path: "loop",
+        populate: {
+          path: "author",
+          model: "User",
+          select: "userName profileImage"
+        }
+      });
+
     if (receiverSocketId) {
       io.to(receiverSocketId).emit("newMessage", populatedMessage);
-
     }
+
     return res.status(200).json(populatedMessage);
-    
+
+
   } catch (error) {
     console.error("sendLoopMessage error:", error);
     return res.status(500).json({ message: "sendLoopMessage error " + error.message });

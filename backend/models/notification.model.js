@@ -13,7 +13,7 @@ const notificationSchema = new mongoose.Schema({
     },
     type: {
         type: String,
-        enum: ["like", "comment","follow"],
+        enum: ["like", "comment","follow","admin"],
         required: true
     },
     message: {
@@ -28,6 +28,10 @@ const notificationSchema = new mongoose.Schema({
     loop: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Loop",
+    },
+     thread: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Thread"   
     },
 
     isRead:{

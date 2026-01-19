@@ -9,11 +9,18 @@ function FollowingThreads() {
 
   if (!threads || threads.length === 0) {
     return (
-      <div className="mt-20 text-center text-gray-500">
-        <p className="text-sm">
-          Follow people to see their posts here.
-        </p>
+      <div className='bg-[var(--bg)] w-full h-screen'> 
+<div className="mt-20  flex flex-col items-center justify-center text-[var(--text)]">
+  <p className="text-sm md:text-base font-medium">
+    Follow people to see their posts here.
+  </p>
+  <span className="mt-2 text-xs text-[var(--text)]">
+    Discover posts from your friends and creators.
+  </span>
+</div>
       </div>
+
+
 
     );
   }
@@ -36,7 +43,7 @@ function FollowingThreads() {
             Following
           </h1>
           <p className="text-xs text-gray-500">
-            Posts from people you follow
+            Threads from people you follow
           </p>
         </div>
 

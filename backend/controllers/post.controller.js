@@ -2,7 +2,6 @@ import uploadOnCloudinary from "../config/cloudinary.js";
 import Loop from "../models/loop.model.js";
 import Notification from "../models/notification.model.js";
 import Post from "../models/post.model.js"
-import threadModel from "../models/thread.model.js";
 import User from "../models/user.model.js"
 import { getSocketId, io } from "../routes/socket.js";
 import Thread from "../models/thread.model.js";
@@ -24,7 +23,6 @@ export const uploadPost = async (req, res) => {
       return res.status(400).json({ message: "media is required" });
     }
 
-    // 🔥 UPLOAD ONLY ONCE
     const cloudinaryRes = await uploadOnCloudinary(req.file.path);
     if (!cloudinaryRes) {
       return res.status(500).json({ message: "Cloudinary upload failed" });
@@ -77,7 +75,7 @@ export const like = async (req, res) => {
         } else {
             post.likes.push(req.userId)
 
-            if (post.author._id != req.userId) {
+            if (post.author.toString() !== req.userId.toString()) {
                 const notification = await Notification.create({
                     sender: req.userId,
                     receiver: post.author._id,
@@ -117,7 +115,7 @@ export const comment = async (req, res) => {
             message
         })
 
-        if (post.author._id != req.userId) {
+        if (post.author.toString() !== req.userId.toString()) {
             const notification = await Notification.create({
                 sender: req.userId,
                 receiver: post.author._id,
@@ -270,8 +268,6 @@ export const getTodayTrending = async (req, res) => {
             return acc;
         }, []);
 
-
-        // Sort and get top 10
         combined.sort((a, b) => b.count - a.count);
         const topTrends = combined.slice(0, 10);
 
@@ -315,10 +311,9 @@ export const getAllTrending = async (req, res) => {
             return acc;
         }, []);
 
-        // Sort all combined hashtags
         combined.sort((a, b) => b.count - a.count);
 
-        res.status(200).json(combined); // send ALL trending hashtags
+        res.status(200).json(combined); 
     } catch (error) {
         res.status(500).json({ message: `all trending post error: ${error}` });
     }

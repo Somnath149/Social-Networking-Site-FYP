@@ -1,10 +1,8 @@
 import { sendMail, usersMail } from "../config/mail.js"
 import genToken from "../config/token.js"
 import User from "../models/user.model.js"
+import Issue from "../models/issue.model.js"
 import bcrypt from "bcryptjs"
-import Post from "../models/post.model.js";
-import Loop from "../models/loop.model.js";
-import Thread from "../models/thread.model.js";
 
 export const signUp = async (req, res) => {
   try {
@@ -36,7 +34,7 @@ export const signUp = async (req, res) => {
 
     res.cookie("token", token, {
       httpOnly: true,
-      secure: false,      // ✅ localhost
+      secure: false,      
       sameSite: "lax",
       maxAge: 10 * 365 * 24 * 60 * 60 * 1000,
     });
@@ -72,7 +70,7 @@ export const signIn = async (req, res) => {
     const token = await genToken(user._id)
     res.cookie("token", token, {
       httpOnly: true,
-      secure: false,      // ✅ localhost
+      secure: false,     
       sameSite: "lax",
       maxAge: 10 * 365 * 24 * 60 * 60 * 1000,
     });
@@ -160,29 +158,32 @@ export const resetPassword = async (req, res) => {
   }
 }
 
-
 export const reportIssue = async (req, res) => {
   try {
-    const { issue } = req.body;
+    const { issue, category } = req.body;
     const userId = req.userId;
 
-    if (!issue) {
-      return res.status(400).json({ message: "Issue is required" });
+    if (!issue || issue.trim().length < 10) {
+      return res.status(400).json({
+        message: "Issue must be at least 10 characters long"
+      });
     }
 
-    const user = await User.findById(userId).select("email userName");
+    const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    await usersMail({
-      from: user.email,
-      userName: user.userName,
-      issue
+    const newIssue = await Issue.create({
+      user: userId,
+      issue,
+      category
     });
 
-    return res.status(200).json({
-      message: "Your issue has been sent to support"
+    return res.status(201).json({
+      success: true,
+      message: "Issue reported successfully",
+      issue: newIssue
     });
 
   } catch (error) {

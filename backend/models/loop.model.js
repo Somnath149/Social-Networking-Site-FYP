@@ -51,5 +51,7 @@ const loopSchema = new mongoose.Schema({
 
 }, { timestamps: true })
 
+loopSchema.index({ author: 1, createdAt: -1 });
+
 const Loop = mongoose.model("Loop", loopSchema)
 export default Loop

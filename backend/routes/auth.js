@@ -1,5 +1,5 @@
 import express from "express"
-import { resetPassword, sendOtp, signIn, signOut, signUp, verifyOtp } from "../controllers/auth.controller.js"
+import { reportIssue, resetPassword, sendOtp, signIn, signOut, signUp, verifyOtp } from "../controllers/auth.controller.js"
 import User from "../models/user.model.js"
 import isAuth from "../middlewares/isAuth.js"
 
@@ -11,6 +11,7 @@ authRouter.get("/signout", signOut)
 authRouter.post("/sendOtp", sendOtp)
 authRouter.post("/verifyOtp", verifyOtp)
 authRouter.post("/resetPassword", resetPassword)
+authRouter.post("/report-issue" ,isAuth, reportIssue)
 
 authRouter.get("/me", isAuth, async (req, res) => {
     try {

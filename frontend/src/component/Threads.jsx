@@ -82,11 +82,11 @@ function Threads({ mythreads, mythreadTailwind, HashTailwind, externalThreads, f
         }
     };
 
-    const handleRetweet = async (threadId,thread) => {
-        if (thread?.verdict === "FALSE") return(
-         toast.warning("This thread contain misleading information can't retweet", {
-  containerId: "warningTop"
-}))
+    const handleRetweet = async (threadId, thread) => {
+        if (thread?.verdict === "FALSE") return (
+            toast.warning("This thread contain misleading information can't retweet", {
+                containerId: "warningTop"
+            }))
 
         try {
             const res = await axios.post(
@@ -214,6 +214,19 @@ function Threads({ mythreads, mythreadTailwind, HashTailwind, externalThreads, f
         return null;
     };
 
+    const reportHandler = async (id, type) => {
+        await axios.post(
+            `${serverUrl}/api/user/report`,
+            {
+                contentId: id,
+                contentType: type,
+                reason: "Inappropriate content"
+            }, { withCredentials: true });
+
+        toast.success("Reported successfully");
+    };
+
+
     useEffect(() => {
         if (!socket) return;
 
@@ -273,6 +286,8 @@ function Threads({ mythreads, mythreadTailwind, HashTailwind, externalThreads, f
                                 >
 
                                     <div className='flex flex-col'>
+
+
                                         <div>
                                             {thread.retweetedBy && (
                                                 <div className="text-xs text-green-400 mb-1 flex items-center gap-1">
@@ -315,41 +330,63 @@ function Threads({ mythreads, mythreadTailwind, HashTailwind, externalThreads, f
                                                 </div>
                                             </div>
                                             <div>
-                                                {mythreads && thread.author?._id === userData._id && (
-                                                    <span>
-                                                        <FiMoreVertical
-                                                            className="text-[var(--text)] w-6 h-6  cursor-dot1 rounded-full hover:bg-[var(--text)]/60 p-1"
-                                                            onClick={(e) => toggleDeleteMenu(thread._id, e)}
-                                                        />
 
-                                                        {showDelete[thread._id] && (
-                                                            <div
-                                                                className="absolute mt-2 bg-[var(--primary)] border
-                                                                 border-gray-700 rounded-xl shadow-lg px-3 py-2 z-20"
-                                                                onClick={(e) => e.stopPropagation()}
-                                                            >
+                                                <div className="relative">
+
+                                                    <button
+                                                        onClick={(e) => toggleDeleteMenu(thread._id, e)}
+                                                        className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
+                                                    >
+                                                        <FiMoreVertical className="text-[var(--text)] w-5 h-5 opacity-70 hover:opacity-100" />
+                                                    </button>
+
+                                                    {showDelete[thread._id] && (
+                                                        <div
+                                                            className="absolute right-0 mt-2 w-48 bg-[var(--primary)] border border-gray-200 dark:border-gray-800 rounded-2xl shadow-2xl z-[60] overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200"
+                                                            onClick={(e) => e.stopPropagation()}
+                                                        >
+                                                            <div className="flex flex-col py-1">
+
+                                                                {mythreads && thread.author?._id === userData._id && (
+                                                                    <button
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            handleDeleteThread(thread._id);
+                                                                        }}
+                                                                        className="w-full px-4 py-3 text-sm font-bold text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 flex items-center gap-3 transition-all"
+                                                                    >
+                                                                        <FaTrash className="w-4 h-4" />
+                                                                        Delete Thread
+                                                                    </button>
+                                                                )}
+
+                                                                {mythreads && thread.author?._id === userData._id && (
+                                                                    <div className="h-[1px] bg-gray-100 dark:bg-gray-800 mx-2" />
+                                                                )}
+
                                                                 <button
-                                                                    onClick={(e) => {
-                                                                        e.stopPropagation();
-                                                                        handleDeleteThread(thread._id);
+                                                                    onClick={() => {
+                                                                        reportHandler(thread._id, "Thread");
+                                                                        setShowDelete((prev) => ({ ...prev, [thread._id]: false }));
                                                                     }}
-                                                                    className="px-3 py-1 text-sm text-red-500
-                                                                     rounded-xl flex items-center bold gap-1"
+                                                                    className="w-full px-4 py-3 text-sm font-medium text-[var(--text)] flex items-center gap-3 transition-all"
                                                                 >
-                                                                    <FaTrash className="w-4 h-4" /> Delete
+                                                                    <span className="text-lg ">🚩</span>
+                                                                    Report Thread
                                                                 </button>
-                                                            </div>
-                                                        )}
 
-                                                    </span>
-                                                )}
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
+
                                             </div>
                                         </div>
                                     </div>
 
                                     <div className="flex-1 flex flex-col gap-2">
 
-    <p className={` ${thread?.verdict === "FALSE" ? "text-red-500" : "text-[var(--text)]"} " text-sm sm:text-base"`}>{renderCaption(thread.caption || thread.content, navigate)}</p>
+                                        <p className={` ${thread?.verdict === "FALSE" ? "text-red-500" : "text-[var(--text)]"} " text-sm sm:text-base"`}>{renderCaption(thread.caption || thread.content, navigate)}</p>
                                         {thread.images?.map((img, i) => (
                                             <img
                                                 key={i}
@@ -433,22 +470,25 @@ function Threads({ mythreads, mythreadTailwind, HashTailwind, externalThreads, f
                                             </div>
 
                                             <div className="flex items-center gap-2  cursor-dot1"
-                                             onClick={(e) => {
-                                                
-                                                e.stopPropagation(); handleRetweet(thread._id, thread) }}>
-                                                
-                                                <span className={`${thread.isRetweeted ? "text-green-500" : "text-gray-300"}`}>
-                                                <FiRefreshCw
-  className="hover:rotate-180 transition-transform duration-300 active:animate-spin"
-/>
+                                                onClick={(e) => {
 
- </span>
+                                                    e.stopPropagation(); handleRetweet(thread._id, thread)
+                                                }}>
+
+                                                <span className={`${thread.isRetweeted ? "text-green-500" : "text-gray-300"}`}>
+                                                    <FiRefreshCw
+                                                        className="hover:rotate-180 transition-transform duration-300 active:animate-spin"
+                                                    />
+
+                                                </span>
                                                 <span className="text-sm">{thread.retweetsCount}</span>
                                             </div>
 
                                             <div className="flex items-center gap-2  cursor-dot1" onClick={(e) => { e.stopPropagation(); setIsQuoting(prev => ({ ...prev, [thread._id]: !prev[thread._id] })) }}>
                                                 ❝ <span className="text-sm">Quote</span>
                                             </div>
+
+
                                         </div>
 
                                         {isQuoting[thread._id] && (

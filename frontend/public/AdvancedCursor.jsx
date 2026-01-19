@@ -23,7 +23,7 @@ export default function AdvancedCursor() {
 
   if (hoverEl) {
     f.classList.add("is-active");
-    // Text dikhane ke liye aap element par data-cursor-text="Read" likh sakte hain
+    // Text dikhane ke liye element par data-cursor-text="Read" likh sakte hain
     setLabel(hoverEl.getAttribute("data-cursor-text") || "");
   } else {
     f.classList.remove("is-active");
@@ -32,10 +32,10 @@ export default function AdvancedCursor() {
 };
 
     const animate = () => {
-      // Dot speed (Tez)
+      // Dot speed
       cx += (x - cx) * 0.2;
       cy += (y - cy) * 0.2;
-      // Follower speed (Slightly slower for fluid feel)
+      // Follower speed
       fx += (x - fx) * 0.12;
       fy += (y - fy) * 0.12;
 
@@ -57,10 +57,10 @@ export default function AdvancedCursor() {
   return (
     <>
       <div className="hidden lg:block">
-        {/* Main Tiny Dot */}
+        {/* Main Dot */}
         <div ref={cursor} className="fixed top-0 left-0 w-1.5 h-1.5 bg-white rounded-full z-[1111] pointer-events-none mix-blend-difference" />
         
-        {/* Large Follower with Text */}
+        {/* Large Follower */}
         <div 
           ref={follower} 
           className="fixed top-0 left-0 w-7 h-7 border border-white/30 rounded-full z-[1111] pointer-events-none transition-[width,height,background-color] duration-300 flex items-center justify-center overflow-hidden"

@@ -9,9 +9,10 @@ import { useNavigate } from 'react-router-dom';
 import PostList from '../pages/PostList';
 import WeeklyKing from './WeeklyKing';
 import PsyIncLogo from '../../public/PsyIncLogo';
-function Feed({ theme }) {
+function Feed({ }) {
 
   const { postData } = useSelector(state => state.post)
+    const { loopData } = useSelector(state => state.loop)
   const { userData } = useSelector(state => state.user)
   const { notificationData } = useSelector(state => state.user)
   const { storyList, currentUserStory } = useSelector(state => state.story)
@@ -22,7 +23,7 @@ function Feed({ theme }) {
   const navigate = useNavigate()
 
   return (
-    <div className={`lg:w-[50%] w-full h-full bg-[var(--bg)] h-screen ${!theme ? "overflow-y-scroll" : ""} `}
+    <div className={`lg:w-[50%] w-full h-full bg-[var(--bg)] h-screen  "overflow-y-scroll"   `}
 
     >
 
@@ -57,7 +58,7 @@ function Feed({ theme }) {
       <div className='w-full min-h-screen flex flex-col items-center gap-[20px] 
                       p-[10px] pt-[40px] bg-[var(--primary)] rounded-t-[60px] relative pb-[120px]' >
 
-        {activeIndex === null && !theme && <Nav />}
+        {activeIndex === null && <Nav />}
 
 
         <div className="relative flex justify-center gap-12 border-b border-gray-700 mb-4">
@@ -109,7 +110,7 @@ function Feed({ theme }) {
             )}
 
             {postData?.map((post, index) =>
-              !theme && <Post post={post} key={index} feed={true} />
+               <Post post={post} key={index} feed={true} />
             )}
 
           </>
@@ -117,15 +118,15 @@ function Feed({ theme }) {
 
         {showExplore &&
           <>
-            {postData?.length === 0 && (
+            {postData?.length === 0 || loopData?.length === 0  && (
               <p className="text-[var(--text)] z-100 text-center mt-10 mb-20">
                 {
-                  "haven't any posts yet..."}
+                  "haven't any loops and loops yet..."}
               </p>
             )}
 
             {
-              !theme && <PostList ExploreTailwind={true}
+              <PostList ExploreTailwind={true}
                 activeIndex={activeIndex}
                 setActiveIndex={setActiveIndex}
               />

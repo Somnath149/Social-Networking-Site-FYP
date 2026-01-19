@@ -47,6 +47,11 @@ const threadSchema = new mongoose.Schema({
             ref: "User"
         }
     ],
+     verdict: {
+      type: String,
+      enum: ["TRUE", "FALSE", "CHECKING"],
+      default: "CHECKING",
+    },
 
     comments: [
         {
@@ -60,5 +65,7 @@ const threadSchema = new mongoose.Schema({
     engagementScore: { type: Number, default: 0 }
 
 }, { timestamps: true });
+
+threadSchema.index({ author: 1, createdAt: -1 });
 
 export default mongoose.model("Thread", threadSchema);

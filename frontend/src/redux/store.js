@@ -6,6 +6,8 @@ import loopSlice from "./loopSlice";
 import messageSlice from "./messageSlice";
 import socketSlice from "./socketSlice";
 import threadSlice from "./threadSlice";
+import adminSlice from "./adminSlice";
+
 const store = configureStore({
   reducer: {
     user: userSlice,
@@ -14,7 +16,8 @@ const store = configureStore({
     loop: loopSlice,
     message: messageSlice,
     socket: socketSlice,
-    thread: threadSlice
+    thread: threadSlice,
+    admin: adminSlice
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

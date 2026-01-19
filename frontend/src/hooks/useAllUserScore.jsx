@@ -3,12 +3,12 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { serverUrl } from "../App";
 import { useDispatch, useSelector } from "react-redux";
-import { setAllUsers } from "../redux/userSlice";
+import { setAllUsers } from "../redux/adminSlice";
 
 const useAllUserScore = () => {
  const {userData}= useSelector(state=>state.user)
   const dispatch = useDispatch();
-  const users = useSelector(state => state.user.allUsers); 
+  const users = useSelector(state => state.admin.allUsers); 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 

@@ -115,7 +115,7 @@ const [show, setShow] = useState(() => {
       new Date().toDateString()
     );
     setShow(false);
-    navigate("/kings");
+    navigate(`/profile/${king?.userName}`);
   }}
           className="
             mt-6 w-full py-3 rounded-xl
@@ -127,7 +127,7 @@ const [show, setShow] = useState(() => {
             transition
           "
         >
-          🔥 View Weekly Leaderboard
+          🔥 View Profile
         </button>
 
         <p className="mt-4 text-center text-xs italic text-white/40">

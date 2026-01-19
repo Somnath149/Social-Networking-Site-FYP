@@ -71,8 +71,22 @@ const userSchema = new mongoose.Schema({
     }
 ]
 ,
+role: {
+    type: String,
+    enum: ["user", "admin"],
+    default: "user"
+},
 
-// 👇 add these fields near the bottom
+isBlocked: {
+    type: Boolean,
+    default: false
+  },
+
+  blockReason: {
+    type: String
+  },
+
+
 weeklyKing: {
     type: Boolean,
     default: false
