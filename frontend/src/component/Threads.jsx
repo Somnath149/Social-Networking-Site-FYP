@@ -6,6 +6,7 @@ import { FaHeart, FaRegComment, FaRegHeart, FaRocket, FaStar, FaTrash } from 're
 import axios from 'axios';
 import { serverUrl } from '../App';
 import { useState } from 'react';
+import dp1 from "../assets/dp1.jpeg"
 import { useNavigate } from 'react-router-dom';
 import ThreadPreview from './ThreadPreview';
 import { FiMoreVertical, FiRefreshCw } from 'react-icons/fi';
@@ -321,7 +322,7 @@ function Threads({ mythreads, mythreadTailwind, HashTailwind, externalThreads, f
                                                         e.stopPropagation();
                                                         navigate(`/profile/${thread.author?.userName}`)
                                                     }}
-                                                    src={thread.author?.profileImage}
+                                                    src={thread.author?.profileImage || dp1}
                                                     alt="profile"
                                                     className="w-12 h-12 sm:w-14 sm:h-14 rounded-full object-cover  cursor-dot1 border border-gray-600"
                                                 />
