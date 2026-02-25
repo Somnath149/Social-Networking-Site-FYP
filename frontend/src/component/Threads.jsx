@@ -211,6 +211,14 @@ function Threads({ mythreads, mythreadTailwind, HashTailwind, externalThreads, f
             );
         }
 
+        if (verdict === "CHECKING") {
+            return (
+                <span className="text-xs text-yellow-400 flex items-center gap-1">
+                    ⏳ Checking information...
+                </span>
+            );
+        }
+
         return null;
     };
 

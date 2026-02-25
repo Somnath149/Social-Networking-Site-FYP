@@ -23,7 +23,7 @@ function Feed({ }) {
   const navigate = useNavigate()
 
   return (
-    <div className={`lg:w-[50%] w-full h-full bg-[var(--bg)] h-screen  "overflow-y-scroll"   `}
+    <div className={`lg:w-[50%] w-full h-full bg-[var(--bg)] h-screen  overflow-y-scroll   `}
 
     >
 
